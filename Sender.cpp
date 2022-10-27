@@ -24,7 +24,7 @@ void Sender::send()
     std::cout << "Input Order: ";
     cmd.clear();
     std::getline(std::cin, cmd);
-    if (cmd.length() > 64 || cmd == "Help")
+    if (cmd.length() > 62 || cmd == "Help")
     {
         cmd.clear();
         help();
@@ -38,10 +38,10 @@ void Sender::send()
         close();
     }
     
-    _socket.async_send_to(boost::asio::buffer(cmd, cmd.length()), *_endpoints.begin(), 
+    _socket.async_send_to(boost::asio::buffer(std::string("od").append(cmd), 2+cmd.length()), *_endpoints.begin(), 
                         [this](boost::system::error_code ec, std::size_t bytes_recvd)
                         {
-                            if (cmd == "Download")
+                            if (!ec && cmd == "Download")
                             {
                                 download();
                             }
@@ -114,7 +114,7 @@ void Sender::download()
 
 void Sender::close()
 {
-    _socket.async_send_to(boost::asio::buffer("CloseCam", 8), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
+    _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
     context_ptr->stop();

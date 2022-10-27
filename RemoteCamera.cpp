@@ -84,21 +84,29 @@ void RemoteCamera::receive()
             {
                 send_frame(); 
             }
-            else if (std::strncmp("Para", _Order, 4) == 0)
+            else if (std::strncmp("od", _Order, 2) == 0)
             {
-                report_parameters();
-            }
-            else if (std::strncmp("CloseCam", _Order, 8) == 0) 
-            {
-                close();
-            }
-            else if (std::strncmp("ReConfig", _Order, 8) == 0)
-            {
-                refresh_config();
-            }
-            else if (std::strncmp("Download", _Order, 8) == 0)
-            {
-                download();
+                if (std::strncmp("odPara", _Order, 6) == 0)
+                {
+                    report_parameters();
+                }
+                else if (std::strncmp("odCloseCam", _Order, 10) == 0) 
+                {
+                    close();
+                }
+                else if (std::strncmp("odReConfig", _Order, 10) == 0)
+                {
+                    refresh_config();
+                }
+                else if (std::strncmp("odDownload", _Order, 10) == 0)
+                {
+                    download();
+                }
+                else
+                {
+                    _Socket.async_send_to(boost::asio::buffer(_Order, bytes_recvd), _Sender,
+                                            [](boost::system::error_code, std::size_t){});
+                }
             }
           }
           std::fill_n(_Order, 64, '\0');
