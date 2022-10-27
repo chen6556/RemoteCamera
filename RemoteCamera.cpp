@@ -69,10 +69,7 @@ void RemoteCamera::close()
         {
           if (!ec)
           {
-            if (_Running && std::strncmp("Next Frame", _Order, 10) == 0)
-            {
-                _Socket.async_send_to(boost::asio::buffer("Close", 5), _Sender, [](boost::system::error_code, std::size_t){});
-            }
+            _Socket.async_send_to(boost::asio::buffer("rpClose", 7), _Sender, [](boost::system::error_code, std::size_t){});
             _Socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
             _Socket.close();
             context_ptr->stop();

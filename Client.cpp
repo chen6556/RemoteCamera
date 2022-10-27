@@ -28,7 +28,7 @@ void Client::receive()
             {
                 show();
             }
-            else if (!ec && std::strncmp("Close", (char *)cache, 5) == 0)
+            else if (!ec && std::strncmp("rpClose", (char *)cache, 7) == 0)
             {
                 close();
             }
@@ -62,6 +62,7 @@ void Client::show()
 
 void Client::close()
 {
+    std::cout << "Client will close." << std::endl;
     cv::destroyAllWindows();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
