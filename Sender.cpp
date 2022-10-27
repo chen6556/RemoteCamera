@@ -1,6 +1,7 @@
 #include "Sender.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <boost/filesystem.hpp>
 
 Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[])
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
@@ -40,8 +41,12 @@ void Sender::send()
     _socket.async_send_to(boost::asio::buffer(cmd, cmd.length()), *_endpoints.begin(), 
                         [this](boost::system::error_code ec, std::size_t bytes_recvd)
                         {
+                            if (cmd == "Download")
+                            {
+                                download();
+                            }
                             send();
-                        });
+                        });  
 }
 
 void Sender::receive()
@@ -72,6 +77,7 @@ void Sender::help() const
     std::cout << "    - Exit : Close Sender." << std::endl;
     std::cout << "    - Para : Get RemoteCamera parameters." << std::endl;
     std::cout << "    - ReConfig : RemoteCamera reloads configs." << std::endl;
+    std::cout << "    - Download : Download current frame." << std::endl;
     std::cout << "    - CloseCam : Close RemoteCamera." << std::endl;
     std::cout << "    - Close : Close Sender, Client and RemoteCamera." << std::endl;
 }
@@ -85,18 +91,25 @@ void Sender::exit()
 
 void Sender::download()
 {
+    _socket.receive_from(boost::asio::buffer(cache, 64), _sender_endpoint);
     cache[6] = '\0';
     length = std::atoi(cache);
     std::vector<u_char> code;
-
+    code.reserve(163840);
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 100};
     for (size_t count = 0; count < length; count += size)
     {
         size = _socket.receive_from(boost::asio::buffer(cache, 64), _sender_endpoint);
         code.insert(code.end(), cache, cache + size);
     }
     cv::Mat frame = cv::imdecode(code, cv::IMREAD_COLOR);
-    cv::imshow("RemoteCamera", frame);
-    cv::waitKey();
+    if (!boost::filesystem::exists("./frames/"))
+    {
+        boost::filesystem::create_directory("./frames/");
+    }
+    size = std::count_if(boost::filesystem::directory_iterator("./frames/"), boost::filesystem::directory_iterator(), 
+                            [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
+    cv::imwrite(std::string("./frames/frame_").append(std::to_string(size)).append(".png"), frame, params);
 }
 
 void Sender::close()

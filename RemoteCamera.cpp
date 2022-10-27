@@ -107,6 +107,10 @@ void RemoteCamera::receive()
             {
                 refresh_config();
             }
+            else if (std::strncmp("Download", _Order, 8) == 0)
+            {
+                download();
+            }
             std::fill_n(_Order, 64, '\0');
           }
           receive();
@@ -165,14 +169,14 @@ void RemoteCamera::report_parameters()
     _Socket.send_to( boost::asio::buffer(para, para.length()), _Sender);
 }
 
-/*void RemoteCamera::download()
+void RemoteCamera::download()
 {
-    std::vector<int> temp_params = {cv::IMWRITE_JPEG_QUALITY, 100};
+    _params[1] = 100;
     std::vector<u_char> temp;
-    cv::imencode(".jpg", _Frame, temp, temp_params);
-    size_t length = temp.size();
-
+    cv::imencode(".jpg", _Frame, temp, _params);
     _params[1] = _quality;
+    size_t length = temp.size();
+    _Socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _Sender);
     _Socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _Sender);
     for (size_t i = 0, end = length/64; i < end; ++i) 
     {
@@ -184,4 +188,4 @@ void RemoteCamera::report_parameters()
         std::memcpy(_Order, &temp[length - length % 64], (length % 64) * sizeof(temp[0]));
         _Socket.send_to( boost::asio::buffer(_Order, length % 64), _Sender);
     }
-}*/
+}

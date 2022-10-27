@@ -30,7 +30,7 @@ class RemoteCamera
         void receive();
         void record();
         void report_parameters();
-        // void download();
+        void download();
 
     public:
         RemoteCamera(boost::asio::io_context& context, short port);
