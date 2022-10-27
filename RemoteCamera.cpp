@@ -63,21 +63,13 @@ void RemoteCamera::record()
 
 void RemoteCamera::close()
 {
-    _Socket.async_receive_from(
-        boost::asio::buffer(_Order, 64), _Sender,
-        [this](boost::system::error_code ec, std::size_t bytes_recvd)
-        {
-          if (!ec)
-          {
-            _Socket.async_send_to(boost::asio::buffer("rpClose", 7), _Sender, [](boost::system::error_code, std::size_t){});
-            _Socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-            _Socket.close();
-            context_ptr->stop();
-            std::fill_n(_Order, 64, '\0');
-          }
-        }); 
+    _Socket.async_receive_from(boost::asio::buffer(_Order, 64), _Sender, [](boost::system::error_code, std::size_t){}); 
     _Running = false;
     _VideoCapture.release();    
+    _Socket.async_send_to(boost::asio::buffer("odClose", 7), _Sender, [](boost::system::error_code, std::size_t){});
+    _Socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+    _Socket.close();
+    context_ptr->stop();
 }
 
 void RemoteCamera::receive()
@@ -108,8 +100,8 @@ void RemoteCamera::receive()
             {
                 download();
             }
-            std::fill_n(_Order, 64, '\0');
           }
+          std::fill_n(_Order, 64, '\0');
           receive();
         }); 
 }

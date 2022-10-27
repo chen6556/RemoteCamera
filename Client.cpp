@@ -24,13 +24,16 @@ void Client::receive()
     _socket.async_receive_from(boost::asio::buffer(cache, 1024), _sender_endpoint,
         [this](boost::system::error_code ec, std::size_t bytes_recvd)
         {
-            if (!ec && std::strncmp("rp", (char *)cache, 2) != 0)
+            if (!ec && std::strncmp("od", (char *)cache, 2) == 0)
+            {
+                if (std::strncmp("odClose", (char *)cache, 7) == 0)
+                {
+                    close();
+                }
+            }
+            else if (!ec && std::strncmp("rp", (char *)cache, 2) != 0)
             {
                 show();
-            }
-            else if (!ec && std::strncmp("rpClose", (char *)cache, 7) == 0)
-            {
-                close();
             }
             
             receive();
