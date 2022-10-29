@@ -30,6 +30,14 @@ void Client::receive()
                 {
                     close();
                 }
+                else{
+                    for (size_t i = 2; i < bytes_recvd; ++i)
+                    {              
+                        std::cout << cache[i];
+                    }
+                    std::cout << std::endl;
+                    std::fill_n(cache, 64, '\0');
+                }
             }
             else if (!ec && std::strncmp("rp", (char *)cache, 2) != 0)
             {

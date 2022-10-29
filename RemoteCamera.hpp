@@ -15,6 +15,8 @@ class RemoteCamera
         std::thread _RecordThread;
         u_char _Cache[1024];
         char _Order[64];
+        char _Message[64];
+        size_t _order_length;
         std::vector<u_char> code;
         std::vector<int> _params;
         int _quality;
