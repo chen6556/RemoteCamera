@@ -16,6 +16,8 @@ class Client
         std::vector<u_char> code;
         size_t length=0, size=0;
         cv::Mat frame;
+        cv::QRCodeDetector* _qr_detector = nullptr;
+        bool _if_decode_qr = false;
 
         void receive();
         void show();

@@ -73,11 +73,11 @@ void Sender::receive()
 void Sender::help() const
 {
     std::cout << "Help:" << std::endl;
-    std::cout << "    - Help : Get help." << std::endl;
     std::cout << "    - Exit : Close Sender." << std::endl;
     std::cout << "    - Para : Get RemoteCamera parameters." << std::endl;
     std::cout << "    - ReConfig : RemoteCamera reloads configs." << std::endl;
     std::cout << "    - Download : Download current frame." << std::endl;
+    std::cout << "    - QR : Turn on or turn off QR detector." << std::endl;
     std::cout << "    - CloseCam : Close RemoteCamera." << std::endl;
     std::cout << "    - Close : Close Sender, Client and RemoteCamera." << std::endl;
 }

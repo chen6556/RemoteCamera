@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(RemoteCamera VERSION 0.1.0)
+project(RemoteCamera VERSION 1.3.0)
 
 # if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 #    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")

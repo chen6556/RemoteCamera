@@ -13,9 +13,7 @@ Client::Client(boost::asio::io_context & context, const char ip[], const char po
 
 Client::~Client()
 {
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    context_ptr->stop();
+    close();
 }
 
 void Client::receive()
@@ -30,6 +28,14 @@ void Client::receive()
                 {
                     close();
                 }
+                else if (std::strncmp("odQR", (char *)cache, 4) == 0)
+                {
+                    _if_decode_qr = !_if_decode_qr;
+                    if (_qr_detector == nullptr)
+                    {
+                        _qr_detector = new cv::QRCodeDetector();
+                    }       
+                }       
                 else{
                     for (size_t i = 2; i < bytes_recvd; ++i)
                     {              
@@ -60,20 +66,30 @@ void Client::show()
     }
 
     frame = cv::imdecode(code, cv::IMREAD_COLOR);
+    if (_if_decode_qr)
+    {
+        std::vector<cv::Point> points;
+        _qr_detector->detectAndDecode(frame, points);
+        if (!points.empty())
+        {
+            cv::polylines(frame, points, true, cv::Scalar(49, 85, 252), 2);
+        }
+    }
     cv::imshow("RemoteCamera", frame);
     cv::waitKey(30);
     if (cv::getWindowProperty("RemoteCamera", cv::WND_PROP_VISIBLE) < 1)
     {
-        cv::destroyAllWindows();
-        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-        _socket.close();
-        context_ptr->stop();
+        close();
     }
 }
 
 void Client::close()
 {
     std::cout << "Client will close." << std::endl;
+    if (_qr_detector != nullptr)
+    {
+        delete _qr_detector;
+    }
     cv::destroyAllWindows();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
