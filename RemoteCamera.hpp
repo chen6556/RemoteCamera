@@ -32,6 +32,7 @@ class RemoteCamera
         void receive();
         void record();
         void report_parameters();
+        void send_parameters();
         void download();
 
     public:

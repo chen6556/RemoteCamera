@@ -78,6 +78,8 @@ void Sender::help() const
     std::cout << "    - ReConfig : RemoteCamera reloads configs." << std::endl;
     std::cout << "    - Download : Download current frame." << std::endl;
     std::cout << "    - QR : Turn on or turn off QR detector." << std::endl;
+    std::cout << "    - Re : Write frames to video." << std::endl;
+    std::cout << "    - StopRe : Stop writing frames to video." << std::endl;
     std::cout << "    - CloseCam : Close RemoteCamera." << std::endl;
     std::cout << "    - Close : Close Sender, Client and RemoteCamera." << std::endl;
 }

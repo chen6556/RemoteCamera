@@ -82,6 +82,7 @@ void RemoteCamera::receive()
           {
             if (_Running && std::strncmp("Next Frame", _Order, 10) == 0)
             {
+                send_frame();  
                 if (_order_length > 0)
                 {
                     _Socket.async_receive_from(boost::asio::buffer(_Order, 10), _Sender,
@@ -90,13 +91,16 @@ void RemoteCamera::receive()
                             [](boost::system::error_code, std::size_t ){});
                     _order_length = 0;
                 }
-                send_frame();  
             }
             else if (std::strncmp("od", _Order, 2) == 0)
             {
                 if (std::strncmp("odPara", _Order, 6) == 0)
                 {
                     report_parameters();
+                }
+                else if (std::strncmp("odSendPara", _Order, 10) == 0)
+                {
+                    send_parameters();
                 }
                 else if (std::strncmp("odCloseCam", _Order, 10) == 0) 
                 {
@@ -172,6 +176,13 @@ void RemoteCamera::report_parameters()
     para.append("\n");
 
     _Socket.send_to( boost::asio::buffer(para, para.length()), _Sender);
+}
+
+void RemoteCamera::send_parameters()
+{
+    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("fps")), std::to_string(_Config.get<int>("fps")).length()), _Sender);
+    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("width")), std::to_string(_Config.get<int>("width")).length()), _Sender);
+    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("height")), std::to_string(_Config.get<int>("height")).length()), _Sender);
 }
 
 void RemoteCamera::download()

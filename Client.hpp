@@ -18,10 +18,14 @@ class Client
         cv::Mat frame;
         cv::QRCodeDetector* _qr_detector = nullptr;
         bool _if_decode_qr = false;
+        cv::VideoWriter* _writer = new cv::VideoWriter("./temp000.avi", cv::VideoWriter::fourcc('M','J','P', 'G'), 30, cv::Size(1280, 720)); 
+        bool _if_write_video = false;
 
         void receive();
         void show();
         void close();
+        void start_record();
+        void stop_record();
 
     public:
         Client(boost::asio::io_context&, const char[], const char[]);
