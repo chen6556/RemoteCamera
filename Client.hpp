@@ -7,15 +7,15 @@
 class Client
 {
     private:
-        boost::asio::io_context* context_ptr;
+        boost::asio::io_context* _context_ptr;
         boost::asio::ip::udp::socket _socket;
         boost::asio::ip::udp::resolver _resolver;
         boost::asio::ip::udp::resolver::results_type _endpoints;
         boost::asio::ip::udp::endpoint _sender_endpoint;
-        uchar cache[1024];
-        std::vector<u_char> code;
-        size_t length=0, size=0;
-        cv::Mat frame;
+        uchar _cache[1024];
+        std::vector<u_char> _code;
+        size_t _length=0, _size=0;
+        cv::Mat _frame;
         cv::QRCodeDetector* _qr_detector = nullptr;
         bool _if_decode_qr = false;
         cv::VideoWriter* _writer = new cv::VideoWriter("./temp000.avi", cv::VideoWriter::fourcc('M','J','P', 'G'), 30, cv::Size(1280, 720)); 

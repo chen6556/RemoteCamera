@@ -2,6 +2,9 @@ build/
 output/Debug/Client.exe
 output/Debug/Sender.exe
 output/Debug/RemoteCamera.exe
+output/Debug/Client.pdb
+output/Debug/Sender.pdb
+output/Debug/RemoteCamera.pdb
 output/Release/Client.exe
 output/Release/Sender.exe
 output/Release/RemoteCamera.exe

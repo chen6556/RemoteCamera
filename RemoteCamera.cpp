@@ -3,20 +3,20 @@
 #include <iostream>
 
 RemoteCamera::RemoteCamera(boost::asio::io_context& context, short port)
-    : _Socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port))
+    : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port))
 {
-    context_ptr = &context;
-    boost::property_tree::read_json("./config.json", _Config);
-    _VideoCapture.open(_Config.get<u_char>("index"));
-    _VideoCapture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M','P','4','2'));
-    _VideoCapture.set(cv::CAP_PROP_FPS, _Config.get<u_char>("fps"));
-    _VideoCapture.set(cv::CAP_PROP_FRAME_WIDTH, _Config.get<u_int>("width"));
-    _VideoCapture.set(cv::CAP_PROP_FRAME_HEIGHT, _Config.get<u_int>("height"));
+    _context_ptr = &context;
+    boost::property_tree::read_json("./config.json", _config);
+    _video_capture.open(_config.get<u_char>("index"));
+    _video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M','P','4','2'));
+    _video_capture.set(cv::CAP_PROP_FPS, _config.get<u_char>("fps"));
+    _video_capture.set(cv::CAP_PROP_FRAME_WIDTH, _config.get<u_int>("width"));
+    _video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, _config.get<u_int>("height"));
     
     _params.push_back(cv::IMWRITE_JPEG_QUALITY);
-    _params.push_back(_Config.get<u_char>("quality") < 85 ? _Config.get<u_char>("quality") : 85);
+    _params.push_back(_config.get<u_char>("quality") < 85 ? _config.get<u_char>("quality") : 85);
     _quality = _params[1];
-    code.reserve(89600);
+    _code.reserve(89600);
     record();
     receive();
     std::cout << "Ready to send frame." << std::endl;
@@ -24,135 +24,135 @@ RemoteCamera::RemoteCamera(boost::asio::io_context& context, short port)
 
 RemoteCamera::~RemoteCamera()
 {
-    _Running = false;
-    _VideoCapture.release();
-    _Socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _Socket.close();
-    context_ptr->stop();
+    _running = false;
+    _video_capture.release();
+    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+    _socket.close();
+    _context_ptr->stop();
 }
 
 void RemoteCamera::release()
 {
-    _Running = false;
-    _VideoCapture.release();
+    _running = false;
+    _video_capture.release();
 }
 
 void RemoteCamera::refresh_config()
 {
-    _Running = false;
-    _Config.clear();
-    boost::property_tree::read_json("./config.json", _Config);
-    _VideoCapture.release();
-    _VideoCapture = cv::VideoCapture(_Config.get<u_char>("index"));
-    _VideoCapture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M','P','4','2'));
-    _VideoCapture.set(cv::CAP_PROP_FPS, _Config.get<u_char>("fps"));
-    _VideoCapture.set(cv::CAP_PROP_FRAME_WIDTH, _Config.get<u_int>("width"));
-    _VideoCapture.set(cv::CAP_PROP_FRAME_HEIGHT, _Config.get<u_int>("height"));
-    _params[1] = _Config.get<u_char>("quality") < 85 ? _Config.get<u_char>("quality") : 85;
+    _running = false;
+    _config.clear();
+    boost::property_tree::read_json("./config.json", _config);
+    _video_capture.release();
+    _video_capture = cv::VideoCapture(_config.get<u_char>("index"));
+    _video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M','P','4','2'));
+    _video_capture.set(cv::CAP_PROP_FPS, _config.get<u_char>("fps"));
+    _video_capture.set(cv::CAP_PROP_FRAME_WIDTH, _config.get<u_int>("width"));
+    _video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, _config.get<u_int>("height"));
+    _params[1] = _config.get<u_char>("quality") < 85 ? _config.get<u_char>("quality") : 85;
     record();
     std::cout << "Refresh config successfully." << std::endl;
-    _Socket.send_to( boost::asio::buffer("rpRefresh config successfully.", 30), _Sender);
+    _socket.send_to( boost::asio::buffer("rpRefresh config successfully.", 30), _sender);
 }
 
 void RemoteCamera::record()
 {
-    _Running = true;
-    _RecordThread = std::thread( [this](){while (_Running){_VideoCapture >> _Frame;}} );
-    _RecordThread.detach();
+    _running = true;
+    _record_thread = std::thread( [this](){while (_running){_video_capture >> _frame;}} );
+    _record_thread.detach();
 }
 
 void RemoteCamera::close()
 {
-    _Socket.async_receive_from(boost::asio::buffer(_Order, 64), _Sender, [](boost::system::error_code, std::size_t){}); 
-    _Running = false;
-    _VideoCapture.release();    
-    _Socket.async_send_to(boost::asio::buffer("odClose", 7), _Sender, [](boost::system::error_code, std::size_t){});
-    _Socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _Socket.close();
-    context_ptr->stop();
+    _socket.async_receive_from(boost::asio::buffer(_order, 64), _sender, [](boost::system::error_code, std::size_t){}); 
+    _running = false;
+    _video_capture.release();    
+    _socket.async_send_to(boost::asio::buffer("odClose", 7), _sender, [](boost::system::error_code, std::size_t){});
+    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+    _socket.close();
+    _context_ptr->stop();
 }
 
 void RemoteCamera::receive()
 {
-    _Socket.async_receive_from(
-        boost::asio::buffer(_Order, 64), _Sender,
+    _socket.async_receive_from(
+        boost::asio::buffer(_order, 64), _sender,
         [this](boost::system::error_code ec, std::size_t bytes_recvd)
         {
           if (!ec)
           {
-            if (_Running && std::strncmp("Next Frame", _Order, 10) == 0)
+            if (_running && std::strncmp("Next Frame", _order, 10) == 0)
             {
                 send_frame();  
                 if (_order_length > 0)
                 {
-                    _Socket.async_receive_from(boost::asio::buffer(_Order, 10), _Sender,
+                    _socket.async_receive_from(boost::asio::buffer(_order, 10), _sender,
                             [](boost::system::error_code, std::size_t ){});
-                    _Socket.async_send_to(boost::asio::buffer(_Message, _order_length), _Sender,
+                    _socket.async_send_to(boost::asio::buffer(_message, _order_length), _sender,
                             [](boost::system::error_code, std::size_t ){});
                     _order_length = 0;
                 }
             }
-            else if (std::strncmp("od", _Order, 2) == 0)
+            else if (std::strncmp("od", _order, 2) == 0)
             {
-                if (std::strncmp("odPara", _Order, 6) == 0)
+                if (std::strncmp("odPara", _order, 6) == 0)
                 {
                     report_parameters();
                 }
-                else if (std::strncmp("odSendPara", _Order, 10) == 0)
+                else if (std::strncmp("odSendPara", _order, 10) == 0)
                 {
                     send_parameters();
                 }
-                else if (std::strncmp("odCloseCam", _Order, 10) == 0) 
+                else if (std::strncmp("odCloseCam", _order, 10) == 0) 
                 {
                     close();
                 }
-                else if (std::strncmp("odReConfig", _Order, 10) == 0)
+                else if (std::strncmp("odReConfig", _order, 10) == 0)
                 {
                     refresh_config();
                 }
-                else if (std::strncmp("odDownload", _Order, 10) == 0)
+                else if (std::strncmp("odDownload", _order, 10) == 0)
                 {
                     download();
                 }
                 else
                 {
                     _order_length = bytes_recvd;
-                    std::strcpy(_Message, _Order);
+                    std::strcpy(_message, _order);
                 }
             }
           }
-          std::fill_n(_Order, 64, '\0');
+          std::fill_n(_order, 64, '\0');
           receive();
         }); 
 }
 
 void RemoteCamera::send_frame()
 {   
-    if (_Frame.empty())
+    if (_frame.empty())
     {
         return;
     }
-    code.clear();
-    cv::imencode(".jpg", _Frame, code, _params);
-    size_t length = code.size();
+    _code.clear();
+    cv::imencode(".jpg", _frame, _code, _params);
+    size_t length = _code.size();
     while (length > 89600)
     {
-        code.clear();
+        _code.clear();
         --_params[1];
-        cv::imencode(".jpg", _Frame, code, _params);
-        length = code.size();
+        cv::imencode(".jpg", _frame, _code, _params);
+        length = _code.size();
     }
     _params[1] = _quality;
-    _Socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _Sender);
+    _socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _sender);
     for (size_t i = 0, end = length/1024; i < end; ++i) 
     {
-        std::memcpy(_Cache, &code[i*1024], 1024 * sizeof(code[0]));
-        _Socket.send_to( boost::asio::buffer(_Cache, 1024), _Sender);
+        std::memcpy(_cache, &_code[i*1024], 1024 * sizeof(_code[0]));
+        _socket.send_to( boost::asio::buffer(_cache, 1024), _sender);
     }
     if (length % 1024 > 0)
     {
-        std::memcpy(_Cache, &code[length - length % 1024], (length % 1024) * sizeof(code[0]));
-        _Socket.send_to( boost::asio::buffer(_Cache, length % 1024), _Sender);
+        std::memcpy(_cache, &_code[length - length % 1024], (length % 1024) * sizeof(_code[0]));
+        _socket.send_to( boost::asio::buffer(_cache, length % 1024), _sender);
     }
 }
 
@@ -164,44 +164,44 @@ void RemoteCamera::report_parameters()
     para.append("\n");
 
     para.append("FPS: ");
-    para.append(std::to_string(_Config.get<u_char>("fps")));
+    para.append(std::to_string(_config.get<u_char>("fps")));
     para.append("\n");
 
     para.append("Width: ");
-    para.append(std::to_string(_Config.get<u_int>("width")));
+    para.append(std::to_string(_config.get<u_int>("width")));
     para.append("\n");
 
     para.append("Height: ");
-    para.append(std::to_string(_Config.get<u_int>("height")));
+    para.append(std::to_string(_config.get<u_int>("height")));
     para.append("\n");
 
-    _Socket.send_to( boost::asio::buffer(para, para.length()), _Sender);
+    _socket.send_to( boost::asio::buffer(para, para.length()), _sender);
 }
 
 void RemoteCamera::send_parameters()
 {
-    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("fps")), std::to_string(_Config.get<int>("fps")).length()), _Sender);
-    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("width")), std::to_string(_Config.get<int>("width")).length()), _Sender);
-    _Socket.send_to(boost::asio::buffer(std::to_string(_Config.get<int>("height")), std::to_string(_Config.get<int>("height")).length()), _Sender);
+    _socket.send_to(boost::asio::buffer(std::to_string(_config.get<int>("fps")), std::to_string(_config.get<int>("fps")).length()), _sender);
+    _socket.send_to(boost::asio::buffer(std::to_string(_config.get<int>("width")), std::to_string(_config.get<int>("width")).length()), _sender);
+    _socket.send_to(boost::asio::buffer(std::to_string(_config.get<int>("height")), std::to_string(_config.get<int>("height")).length()), _sender);
 }
 
 void RemoteCamera::download()
 {
     _params[1] = 100;
     std::vector<u_char> temp;
-    cv::imencode(".jpg", _Frame, temp, _params);
+    cv::imencode(".jpg", _frame, temp, _params);
     _params[1] = _quality;
     size_t length = temp.size();
-    _Socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _Sender);
-    _Socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _Sender);
+    _socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _sender);
+    _socket.send_to( boost::asio::buffer(std::to_string(length), std::to_string(length).length()), _sender);
     for (size_t i = 0, end = length/64; i < end; ++i) 
     {
-        std::memcpy(_Order, &temp[i*64], 64 * sizeof(temp[0]));
-        _Socket.send_to( boost::asio::buffer(_Order, 64), _Sender);
+        std::memcpy(_order, &temp[i*64], 64 * sizeof(temp[0]));
+        _socket.send_to( boost::asio::buffer(_order, 64), _sender);
     }
     if (length % 64 > 0)
     {
-        std::memcpy(_Order, &temp[length - length % 64], (length % 64) * sizeof(temp[0]));
-        _Socket.send_to( boost::asio::buffer(_Order, length % 64), _Sender);
+        std::memcpy(_order, &temp[length - length % 64], (length % 64) * sizeof(temp[0]));
+        _socket.send_to( boost::asio::buffer(_order, length % 64), _sender);
     }
 }

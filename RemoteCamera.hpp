@@ -8,22 +8,22 @@
 class RemoteCamera
 {
     private:
-        cv::VideoCapture _VideoCapture;
-        boost::property_tree::ptree _Config;
-        cv::Mat _Frame;
-        bool _Running = true;
-        std::thread _RecordThread;
-        u_char _Cache[1024];
-        char _Order[64];
-        char _Message[64];
+        cv::VideoCapture _video_capture;
+        boost::property_tree::ptree _config;
+        cv::Mat _frame;
+        bool _running = true;
+        std::thread _record_thread;
+        u_char _cache[1024];
+        char _order[64];
+        char _message[64];
         size_t _order_length;
-        std::vector<u_char> code;
+        std::vector<u_char> _code;
         std::vector<int> _params;
         int _quality;
 
-        boost::asio::io_context* context_ptr;
-        boost::asio::ip::udp::socket _Socket;
-        boost::asio::ip::udp::endpoint _Sender;
+        boost::asio::io_context* _context_ptr;
+        boost::asio::ip::udp::socket _socket;
+        boost::asio::ip::udp::endpoint _sender;
 
         void send_frame();
         void release();
