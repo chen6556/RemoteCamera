@@ -3,12 +3,25 @@
 #include <iostream>
 #include <boost/filesystem.hpp>
 
-Client::Client(boost::asio::io_context & context, const char ip[], const char port[])
+Client::Client(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
     _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
     _code.reserve(89600);
+    _if_gui = gui;
+    receive();
+    _writer->release();
+    boost::filesystem::remove("./temp000.avi");
+}
+
+Client::Client(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
+    : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
+{
+    _context_ptr = &context;
+    _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
+    _code.reserve(89600);
+    _if_gui = gui;
     receive();
     _writer->release();
     boost::filesystem::remove("./temp000.avi");
@@ -22,10 +35,19 @@ Client::~Client()
     }
     _writer->release();
     delete _writer;
-    cv::destroyAllWindows();
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    _context_ptr->stop();
+    if (!_if_gui)
+    {
+        cv::destroyAllWindows();
+    }
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+        _socket.close();
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Client::receive()
@@ -60,11 +82,14 @@ void Client::receive()
                     stop_record();
                 }
                 else{
-                    for (size_t i = 2; i < bytes_recvd; ++i)
-                    {              
-                        std::cout << _cache[i];
+                    if (!_if_gui)
+                    {
+                        for (size_t i = 2; i < bytes_recvd; ++i)
+                        {              
+                            std::cout << _cache[i];
+                        }
+                        std::cout << std::endl;
                     }
-                    std::cout << std::endl;
                 }
                 std::fill_n(_cache, 64, '\0');
             }
@@ -102,6 +127,10 @@ void Client::show()
     {
         _writer->write(_frame);
     }
+    if (_if_gui)
+    {
+        return;
+    }
     cv::imshow("RemoteCamera", _frame);
     cv::waitKey(30);
     if (cv::getWindowProperty("RemoteCamera", cv::WND_PROP_VISIBLE) < 1)
@@ -112,16 +141,20 @@ void Client::show()
 
 void Client::close()
 {
-    std::cout << "Client will close." << std::endl;
+    if (!_if_gui)
+    {
+        std::cout << "Client will close." << std::endl;
+    }
     if (_qr_detector != nullptr)
     {
         delete _qr_detector;
     }
     _writer->release();
-    delete _writer;
-    cv::destroyAllWindows();
+    if (!_if_gui)
+    {
+        cv::destroyAllWindows();
+    }
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
 }
 
@@ -159,4 +192,9 @@ void Client::stop_record()
         _writer->release();
     }
     _if_write_video = false;
+}
+
+const cv::Mat& Client::frame() const
+{
+    return _frame;
 }

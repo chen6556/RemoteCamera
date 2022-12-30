@@ -15,7 +15,6 @@ int main(int argc, char *argv[])
         Sender s(context, argv[1], argv[2]);
 
         context.run();
-        
     }
     catch (std::exception& e)
     {

@@ -3,31 +3,54 @@
 #include <opencv2/opencv.hpp>
 #include <boost/filesystem.hpp>
 
-Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[])
+Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
     _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
+    _if_gui = gui;
+    receive();
+    send();
+}
+
+Sender::Sender(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
+: _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
+{
+    _context_ptr = &context;
+    _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
+    _if_gui = gui;
     receive();
     send();
 }
 
 Sender::~Sender()
 {
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    _context_ptr->stop();
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+        _socket.close();
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Sender::send()
 {
-    std::cout << "Input Order: ";
     _cmd.clear();
-    std::getline(std::cin, _cmd);
+    if (!_if_gui)
+    {
+        std::cout << "Input Order: ";
+        std::getline(std::cin, _cmd);
+    }
     if (_cmd.length() > 62 || _cmd == "Help")
     {
         _cmd.clear();
-        help();
+        if (!_if_gui)
+        {
+            help();
+        }
     }
     else if (_cmd == "Exit")
     {
@@ -38,7 +61,18 @@ void Sender::send()
         close();
     }
     
-    _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd), 2+_cmd.length()), *_endpoints.begin(), 
+    
+    if (_cmd.empty())
+    {
+        _socket.async_send_to(boost::asio::buffer(std::string(""), 0), *_endpoints.begin(), 
+                    [this](boost::system::error_code, std::size_t)
+                    {
+                        send();
+                    });
+    }
+    else
+    {
+        _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd), 2+_cmd.length()), *_endpoints.begin(), 
                         [this](boost::system::error_code ec, std::size_t bytes_recvd)
                         {
                             if (!ec && _cmd == "Download")
@@ -47,6 +81,7 @@ void Sender::send()
                             }
                             send();
                         });  
+    }
 }
 
 void Sender::receive()
@@ -59,9 +94,12 @@ void Sender::receive()
           {
             if (std::strncmp("rp", _cache, 2) == 0)
             {
-                for (size_t i = 2; i < bytes_recvd; ++i)
-                {              
-                    std::cout << _cache[i];
+                if (!_if_gui)
+                {
+                    for (size_t i = 2; i < bytes_recvd; ++i)
+                    {              
+                        std::cout << _cache[i];
+                    }
                 }
                 std::fill_n(_cache, 64, '\0');
             }
@@ -72,6 +110,10 @@ void Sender::receive()
 
 void Sender::help() const
 {
+    if (_if_gui)
+    {
+        return;
+    }
     std::cout << "Help:" << std::endl;
     std::cout << "    - Exit : Close Sender." << std::endl;
     std::cout << "    - Para : Get RemoteCamera parameters." << std::endl;
@@ -86,9 +128,14 @@ void Sender::help() const
 
 void Sender::exit()
 {
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    _context_ptr->stop();
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Sender::download()
@@ -118,6 +165,10 @@ void Sender::close()
 {
     _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
+}
+
+void Sender::get_cmd(const char* msg)
+{
+    _cmd = msg;
 }
