@@ -23,9 +23,15 @@ Client::~Client()
     _writer->release();
     delete _writer;
     cv::destroyAllWindows();
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    _context_ptr->stop();
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+        _socket.close();
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Client::receive()
@@ -116,12 +122,12 @@ void Client::close()
     if (_qr_detector != nullptr)
     {
         delete _qr_detector;
+        _qr_detector = nullptr;
     }
     _writer->release();
     delete _writer;
     cv::destroyAllWindows();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
 }
 

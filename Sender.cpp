@@ -14,9 +14,15 @@ Sender::Sender(boost::asio::io_context & context, const char ip[], const char po
 
 Sender::~Sender()
 {
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
-    _context_ptr->stop();
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+        _socket.close();
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Sender::send()
@@ -87,7 +93,6 @@ void Sender::help() const
 void Sender::exit()
 {
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
 }
 
@@ -118,6 +123,5 @@ void Sender::close()
 {
     _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
 }
