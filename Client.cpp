@@ -149,6 +149,7 @@ void Client::close()
     if (_qr_detector != nullptr)
     {
         delete _qr_detector;
+        _qr_detector = nullptr;
     }
     _writer->release();
     if (!_if_gui)
@@ -198,4 +199,13 @@ void Client::stop_record()
 const cv::Mat& Client::frame() const
 {
     return _frame;
+}
+
+void Client::decode_QR()
+{
+    _if_decode_qr = !_if_decode_qr;
+    if (_qr_detector == nullptr)
+    {
+        _qr_detector = new cv::QRCodeDetector();
+    } 
 }

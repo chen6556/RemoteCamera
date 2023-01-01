@@ -68,7 +68,6 @@ void RemoteCamera::close()
     _video_capture.release();    
     _socket.async_send_to(boost::asio::buffer("odClose", 7), _sender, [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _socket.close();
     _context_ptr->stop();
 }
 

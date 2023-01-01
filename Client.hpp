@@ -33,4 +33,5 @@ class Client
         ~Client();
         const cv::Mat& frame() const;
         void close();
+        void decode_QR();
 };

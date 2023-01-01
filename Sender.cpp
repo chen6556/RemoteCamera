@@ -49,16 +49,13 @@ void Sender::send()
         switch (_gui_cmd)
         {
         case 0:
-            _cmd = "Download";
+            _cmd = "Download\0";
             break;
         case 1:
-            _cmd = "QR";
+            _cmd = "Re\0";
             break;
         case 2:
-            _cmd = "Re";
-            break;
-        case 3:
-            _cmd = "StopRe";
+            _cmd = "StopRe\0";
             break;
         default:
             break;
@@ -192,10 +189,9 @@ void Sender::get_cmd(const int& value)
 {
     switch (value)
     {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
+    case 0: // Download
+    case 1: // Re
+    case 2: // StopRe
         _gui_cmd = value;
         break;
     default:
