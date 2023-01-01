@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include <boost/filesystem.hpp>
+#include <chrono>
 
 Client::Client(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
@@ -112,7 +113,6 @@ void Client::show()
         _size = _socket.receive_from(boost::asio::buffer(_cache, 1024), _sender_endpoint);
         _code.insert(_code.end(), _cache, _cache + _size);
     }
-
     _frame = cv::imdecode(_code, cv::IMREAD_COLOR);
     if (_if_decode_qr)
     {
@@ -129,6 +129,7 @@ void Client::show()
     }
     if (_if_gui)
     {
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
         return;
     }
     cv::imshow("RemoteCamera", _frame);

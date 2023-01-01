@@ -2,6 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
 #include "Client.hpp"
 #include "Sender.hpp"
 
@@ -24,15 +26,18 @@ public slots:
     void record();
     void stopRecord();
     void closeCamera();
+    void refreshGraphicsViewSize();
 
 private:
     Ui::MainWindow *ui;
     Client* _client = nullptr;
     Sender* _sender = nullptr;
-    boost::asio::io_context _context_c;
-    boost::asio::io_context _context_s;
+
+    cv::Mat _frame;
+    bool _running = false;
 
     void run_client();
     void run_sender();
+    void refresh_graphicsView();
 };
 #endif // MAINWINDOW_H

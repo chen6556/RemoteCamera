@@ -38,7 +38,6 @@ Sender::~Sender()
 
 void Sender::send()
 {
-    _cmd.clear();
     if (!_if_gui)
     {
         std::cout << "Input Order: ";
@@ -79,6 +78,7 @@ void Sender::send()
                             {
                                 download();
                             }
+                            _cmd.clear();
                             send();
                         });  
     }

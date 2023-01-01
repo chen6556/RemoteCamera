@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <thread>
+#include <chrono>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,15 +12,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
+    _running = false;
+    closeCamera();
     delete ui;
-    if (_client != nullptr)
-    {
-        delete _client;
-    }
-    if (_sender != nullptr)
-    {
-        delete _sender;
-    }
 }
 
 void MainWindow::connect()
@@ -31,19 +26,34 @@ void MainWindow::connect()
     if (_client == nullptr)
     {
         std::thread(&MainWindow::run_client, this).detach();
+    }  
+    if (!_running)
+    {
+        _running = true;
+        std::thread(&MainWindow::refresh_graphicsView, this).detach();
+    }
+}
+
+void MainWindow::refreshGraphicsViewSize()
+{
+    if (_client != nullptr && !_client->frame().empty())
+    {
+        ui->imageLabel->resize(_frame.cols + 8, _frame.rows + 8);
     }
 }
 
 void MainWindow::run_client()
 {
-    _client = new Client(_context_c, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
-    _context_c.run();
+    boost::asio::io_context context;
+    _client = new Client(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
+    context.run();
 }
 
 void MainWindow::run_sender()
 {
-    _sender = new Sender(_context_s, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
-    _context_s.run();
+    boost::asio::io_context context;
+    _sender = new Sender(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
+    context.run();
 }
 
 void MainWindow::download()
@@ -80,16 +90,42 @@ void MainWindow::stopRecord()
 
 void MainWindow::closeCamera()
 {
+    _running = false;
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     if (_sender != nullptr)
     {
         _sender->close();
         delete _sender;
         _sender = nullptr;
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
     if (_client != nullptr)
     {
         _client->close();
         delete _client;
         _client = nullptr;
+    }    
+    ui->imageLabel->clear();
+}
+
+void MainWindow::refresh_graphicsView()
+{
+    while (_running)
+    {
+        if (_client == nullptr)
+        {
+            std::this_thread::sleep_for(std::chrono::milliseconds(30));
+            continue;
+        }
+        _frame = _client->frame();
+        if (_frame.empty())
+        {
+            continue;
+        }
+        cv::cvtColor(_frame, _frame, cv::COLOR_BGR2RGB);
+        
+        ui->imageLabel->setPixmap( QPixmap::fromImage( QImage(_frame.data, _frame.cols, _frame.rows, QImage::Format::Format_RGB888)) );
+         
+        std::this_thread::sleep_for(std::chrono::milliseconds(17));
     }
 }
