@@ -38,10 +38,32 @@ Sender::~Sender()
 
 void Sender::send()
 {
+    _cmd.clear();
     if (!_if_gui)
     {
         std::cout << "Input Order: ";
         std::getline(std::cin, _cmd);
+    }
+    else
+    {
+        switch (_gui_cmd)
+        {
+        case 0:
+            _cmd = "Download";
+            break;
+        case 1:
+            _cmd = "QR";
+            break;
+        case 2:
+            _cmd = "Re";
+            break;
+        case 3:
+            _cmd = "StopRe";
+            break;
+        default:
+            break;
+        }
+        _gui_cmd = -1;
     }
     if (_cmd.length() > 62 || _cmd == "Help")
     {
@@ -60,7 +82,6 @@ void Sender::send()
         close();
     }
     
-    
     if (_cmd.empty())
     {
         _socket.async_send_to(boost::asio::buffer(std::string(""), 0), *_endpoints.begin(), 
@@ -71,14 +92,13 @@ void Sender::send()
     }
     else
     {
-        _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd), 2+_cmd.length()), *_endpoints.begin(), 
+        _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd).c_str(), 2+_cmd.length()), *_endpoints.begin(), 
                         [this](boost::system::error_code ec, std::size_t bytes_recvd)
                         {
                             if (!ec && _cmd == "Download")
                             {
                                 download();
                             }
-                            _cmd.clear();
                             send();
                         });  
     }
@@ -168,7 +188,18 @@ void Sender::close()
     _context_ptr->stop();
 }
 
-void Sender::get_cmd(const char* msg)
+void Sender::get_cmd(const int& value)
 {
-    _cmd = msg;
+    switch (value)
+    {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+        _gui_cmd = value;
+        break;
+    default:
+        _gui_cmd = -1;
+        break;
+    }
 }

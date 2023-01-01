@@ -60,7 +60,7 @@ void MainWindow::download()
 {
     if (_sender != nullptr)
     {
-        _sender->get_cmd("Download");
+        _sender->get_cmd(0);
     }
 }
 
@@ -68,7 +68,7 @@ void MainWindow::decodeQR()
 {
     if (_sender != nullptr)
     {
-        _sender->get_cmd("QR");
+        _sender->get_cmd(1);
     }
 }
 
@@ -76,7 +76,7 @@ void MainWindow::record()
 {
     if (_sender != nullptr)
     {
-        _sender->get_cmd("RE");
+        _sender->get_cmd(2);
     }
 }
 
@@ -84,7 +84,7 @@ void MainWindow::stopRecord()
 {
     if (_sender != nullptr)
     {
-        _sender->get_cmd("StopRE");
+        _sender->get_cmd(3);
     }
 }
 
