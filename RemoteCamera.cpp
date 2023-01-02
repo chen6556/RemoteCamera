@@ -28,6 +28,7 @@ RemoteCamera::~RemoteCamera()
     _video_capture.release();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
+    _socket.release();
     _context_ptr->stop();
 }
 

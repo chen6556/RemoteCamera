@@ -30,6 +30,7 @@ Client::Client(boost::asio::io_context & context, const std::string ip, const st
 
 Client::~Client()
 {
+    _shutdown = true;
     if (_qr_detector != nullptr)
     {
         delete _qr_detector;
@@ -43,7 +44,8 @@ Client::~Client()
     if (_socket.is_open())
     {
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-        _socket.close();
+        _socket.close();  
+        _socket.release(); 
     }
     if (!_context_ptr->stopped())
     {
@@ -61,7 +63,14 @@ void Client::receive()
             {
                 if (std::strncmp("odClose", (char *)_cache, 7) == 0)
                 {
-                    close();
+                    if (!_if_gui)
+                    {
+                        close();
+                    }
+                    else
+                    {
+                        _shutdown = true;
+                    }
                 }
                 else if (std::strncmp("odQR", (char *)_cache, 4) == 0)
                 {
@@ -99,7 +108,10 @@ void Client::receive()
                 show();
             }
             
-            receive();
+            if (!_shutdown)
+            {
+                receive();
+            }
         }); 
 }
 
@@ -142,22 +154,26 @@ void Client::show()
 
 void Client::close()
 {
+    _shutdown = true;
     if (!_if_gui)
     {
         std::cout << "Client will close." << std::endl;
     }
+    _writer->release();
     if (_qr_detector != nullptr)
     {
         delete _qr_detector;
         _qr_detector = nullptr;
     }
-    _writer->release();
     if (!_if_gui)
     {
         cv::destroyAllWindows();
     }
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _context_ptr->stop();
+    if (!_if_gui)
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Client::start_record()

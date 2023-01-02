@@ -20,7 +20,7 @@ class Client
         bool _if_decode_qr = false;
         cv::VideoWriter* _writer = new cv::VideoWriter("./temp000.avi", cv::VideoWriter::fourcc('M','J','P', 'G'), 30, cv::Size(1280, 720)); 
         bool _if_write_video = false;
-        bool _if_gui = false;
+        bool _if_gui = false, _shutdown = false;
 
         void receive();
         void show();

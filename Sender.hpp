@@ -20,13 +20,13 @@ class Sender
         void send();
         void receive();
         void help() const;
-        void download();        
+        void download();     
+        void close();   
+        void exit();
 
     public:
         Sender(boost::asio::io_context&, const char[], const char[], bool gui = false);
         Sender(boost::asio::io_context&, const std::string, const std::string, bool gui = false);
         ~Sender();
         void get_cmd(const int& value);
-        void exit();
-        void close();
 };

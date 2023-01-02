@@ -29,6 +29,7 @@ Sender::~Sender()
     {
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         _socket.close();
+        _socket.release();
     }
     if (!_context_ptr->stopped())
     {
@@ -48,6 +49,9 @@ void Sender::send()
     {
         switch (_gui_cmd)
         {
+        case -2:
+            _cmd = "Close";
+            break;
         case 0:
             _cmd = "Download\0";
             break;
@@ -77,6 +81,7 @@ void Sender::send()
     else if (_cmd == "Close")
     {
         close();
+        return;
     }
     
     if (_cmd.empty())
@@ -182,13 +187,17 @@ void Sender::close()
 {
     _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _context_ptr->stop();
+    if (!_if_gui)
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Sender::get_cmd(const int& value)
 {
     switch (value)
     {
+    case -2: // Close
     case 0: // Download
     case 1: // Re
     case 2: // StopRe

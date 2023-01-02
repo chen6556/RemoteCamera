@@ -47,6 +47,7 @@ void MainWindow::run_client()
     boost::asio::io_context context;
     _client = new Client(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
     context.run();
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 void MainWindow::run_sender()
@@ -54,6 +55,7 @@ void MainWindow::run_sender()
     boost::asio::io_context context;
     _sender = new Sender(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
     context.run();
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
 
 void MainWindow::download()
@@ -94,7 +96,8 @@ void MainWindow::closeCamera()
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     if (_sender != nullptr)
     {
-        _sender->close();
+        _sender->get_cmd(-2);
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         delete _sender;
         _sender = nullptr;
     }
@@ -102,9 +105,10 @@ void MainWindow::closeCamera()
     if (_client != nullptr)
     {
         _client->close();
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         delete _client;
         _client = nullptr;
-    }    
+    } 
     ui->imageLabel->clear();
 }
 
