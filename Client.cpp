@@ -45,7 +45,7 @@ Client::~Client()
     {
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         _socket.close();  
-        _socket.release(); 
+        // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
     }
     if (!_context_ptr->stopped())
     {
@@ -63,13 +63,13 @@ void Client::receive()
             {
                 if (std::strncmp("odClose", (char *)_cache, 7) == 0)
                 {
-                    if (!_if_gui)
+                    if (_if_gui)
                     {
-                        close();
+                        _shutdown = true;
                     }
                     else
                     {
-                        _shutdown = true;
+                        close();
                     }
                 }
                 else if (std::strncmp("odQR", (char *)_cache, 4) == 0)
