@@ -23,8 +23,6 @@ public slots:
     void connect();
     void download();
     void decodeQR();
-    void record();
-    void stopRecord();
     void closeCamera();
     void refreshGraphicsViewSize();
 

@@ -74,22 +74,6 @@ void MainWindow::decodeQR()
     }
 }
 
-void MainWindow::record()
-{
-    if (_sender != nullptr)
-    {
-        _sender->get_cmd(1);
-    }
-}
-
-void MainWindow::stopRecord()
-{
-    if (_sender != nullptr)
-    {    
-        _sender->get_cmd(2);
-    }
-}
-
 void MainWindow::closeCamera()
 {
     _running = false;

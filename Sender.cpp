@@ -53,13 +53,13 @@ void Sender::send()
             _cmd = "Close";
             break;
         case 0:
-            _cmd = "Download\0";
+            _cmd = "Download";
             break;
         case 1:
-            _cmd = "Re\0";
+            _cmd = "Re";
             break;
         case 2:
-            _cmd = "StopRe\0";
+            _cmd = "StopRe";
             break;
         default:
             break;
