@@ -51,20 +51,28 @@ void Sender::send()
         {
         case -2:
             _cmd = "Close";
+            _gui_cmd = -1;
             break;
         case 0:
             _cmd = "Download";
+            _gui_cmd = -1;
             break;
         case 1:
             _cmd = "Re";
+            _gui_cmd = -1;
             break;
         case 2:
             _cmd = "StopRe";
+            _gui_cmd = -1;
+            break;
+        case 3:
+            _cmd = "QR";
+            _gui_cmd = -1;
             break;
         default:
             break;
         }
-        _gui_cmd = -1;
+
     }
     if (_cmd.length() > 62 || _cmd == "Help")
     {
@@ -201,6 +209,7 @@ void Sender::get_cmd(const int& value)
     case 0: // Download
     case 1: // Re
     case 2: // StopRe
+    case 3: // QR
         _gui_cmd = value;
         break;
     default:

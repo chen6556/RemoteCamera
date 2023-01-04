@@ -82,10 +82,7 @@ void Client::receive()
                 }       
                 else if (std::strncmp("odRe", (char *)_cache, 4) == 0)
                 {
-                    if (!_if_write_video)
-                    {
-                        start_record();
-                    }
+                    start_record();
                 }
                 else if (std::strncmp("odStopRe", (char *)_cache, 8) == 0)
                 {
@@ -141,7 +138,6 @@ void Client::show()
     }
     if (_if_gui)
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
         return;
     }
     cv::imshow("RemoteCamera", _frame);
@@ -178,6 +174,10 @@ void Client::close()
 
 void Client::start_record()
 {
+    if (_if_write_video)
+    {
+        return;
+    }
     if (!boost::filesystem::exists("./videos/"))
     {
         boost::filesystem::create_directory("./videos/");

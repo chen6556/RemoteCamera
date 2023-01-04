@@ -23,6 +23,7 @@ void MainWindow::connect()
     {
         std::thread(&MainWindow::run_sender, this).detach();
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
     if (_client == nullptr)
     {
         std::thread(&MainWindow::run_client, this).detach();
@@ -72,6 +73,10 @@ void MainWindow::decodeQR()
     {
         _client->decode_QR();
     }
+    // if (_sender != nullptr)
+    // {
+    //     _sender->get_cmd(3);
+    // }
 }
 
 void MainWindow::closeCamera()

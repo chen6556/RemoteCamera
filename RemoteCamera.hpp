@@ -16,7 +16,7 @@ class RemoteCamera
         u_char _cache[1024];
         char _order[64];
         char _message[64];
-        size_t _order_length;
+        size_t _order_length = 0;
         std::vector<u_char> _code;
         std::vector<int> _params;
         int _quality;
