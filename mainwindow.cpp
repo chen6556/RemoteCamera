@@ -69,14 +69,10 @@ void MainWindow::download()
 
 void MainWindow::decodeQR()
 {
-    if (_client != nullptr)
+    if (_sender != nullptr)
     {
-        _client->decode_QR();
+        _sender->get_cmd(3);
     }
-    // if (_sender != nullptr)
-    // {
-    //     _sender->get_cmd(3);
-    // }
 }
 
 void MainWindow::closeCamera()
@@ -120,5 +116,21 @@ void MainWindow::refresh_graphicsView()
         ui->imageLabel->setPixmap( QPixmap::fromImage( QImage(_frame.data, _frame.cols, _frame.rows, QImage::Format::Format_RGB888)) );
          
         std::this_thread::sleep_for(std::chrono::milliseconds(17));
+    }
+}
+
+void MainWindow::record()
+{
+    if (_sender != nullptr)
+    {
+        _sender->get_cmd(1);
+    }
+}
+
+void MainWindow::stopRecord()
+{
+    if (_sender != nullptr)
+    {
+        _sender->get_cmd(2);
     }
 }

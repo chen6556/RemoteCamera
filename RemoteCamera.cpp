@@ -82,15 +82,16 @@ void RemoteCamera::receive()
           {
             if (_running && std::strncmp("Next Frame", _order, 10) == 0)
             {
-                send_frame();  
                 if (_order_length > 0)
                 {
-                    _socket.async_receive_from(boost::asio::buffer(_order, 10), _sender,
-                            [](boost::system::error_code, std::size_t ){});
                     _socket.async_send_to(boost::asio::buffer(_message, _order_length), _sender,
                             [](boost::system::error_code, std::size_t ){});
                     _order_length = 0;
                 }
+                else
+                {
+                    send_frame(); 
+                } 
             }
             else if (std::strncmp("od", _order, 2) == 0)
             {

@@ -2,8 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QGraphicsScene>
-#include <QGraphicsPixmapItem>
 #include "Client.hpp"
 #include "Sender.hpp"
 
@@ -25,6 +23,8 @@ public slots:
     void decodeQR();
     void closeCamera();
     void refreshGraphicsViewSize();
+    void record();
+    void stopRecord();
 
 private:
     Ui::MainWindow *ui;

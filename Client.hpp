@@ -24,6 +24,7 @@ class Client
 
         void receive();
         void show();
+        void decode_QR();
         void start_record();
         void stop_record();
 
@@ -33,5 +34,4 @@ class Client
         ~Client();
         const cv::Mat& frame() const;
         void close();
-        void decode_QR();
 };
