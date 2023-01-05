@@ -51,6 +51,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(ClientGUI
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc
     )
 
 else()
@@ -79,13 +80,13 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(ClientGUI)
 endif()
 
-add_executable(RemoteCamera RunRemoteCamera.cpp RemoteCamera.cpp)
+add_executable(RemoteCamera RunRemoteCamera.cpp RemoteCamera.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(RemoteCamera ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(Client RunClient.cpp Client.cpp)
+add_executable(Client RunClient.cpp Client.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(Client ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(Sender RunSender.cpp Sender.cpp)
+add_executable(Sender RunSender.cpp Sender.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(Sender ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
