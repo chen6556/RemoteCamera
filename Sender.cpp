@@ -170,6 +170,7 @@ void Sender::exit()
 
 void Sender::download()
 {
+    _writing_frame = true;
     _socket.receive_from(boost::asio::buffer(_cache, 64), _sender_endpoint);
     _cache[6] = '\0';
     _length = std::atoi(_cache);
@@ -182,13 +183,14 @@ void Sender::download()
         code.insert(code.end(), _cache, _cache + _size);
     }
     cv::Mat frame = cv::imdecode(code, cv::IMREAD_COLOR);
-    if (!boost::filesystem::exists("./frames/"))
+    if (!boost::filesystem::exists(_frame_path))
     {
-        boost::filesystem::create_directory("./frames/");
+        boost::filesystem::create_directory(_frame_path);
     }
-    _size = std::count_if(boost::filesystem::directory_iterator("./frames/"), boost::filesystem::directory_iterator(), 
+    _size = std::count_if(boost::filesystem::directory_iterator(_frame_path), boost::filesystem::directory_iterator(), 
                             [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
-    cv::imwrite(std::string("./frames/frame_").append(std::to_string(_size)).append(".png"), frame, params);
+    cv::imwrite(_frame_path.append("/frame_").append(std::to_string(_size)).append(".png"), frame, params);
+    _writing_frame = false;
 }
 
 void Sender::close()
@@ -216,4 +218,22 @@ void Sender::get_cmd(const int& value)
         _gui_cmd = -1;
         break;
     }
+}
+
+void Sender::set_frame_path(const std::string& path)
+{
+    if (_writing_frame)
+    {
+        return;
+    }
+    _frame_path = path;
+}
+
+void Sender::set_frame_path(const char path[])
+{
+    if (_writing_frame)
+    {
+        return;
+    }
+    _frame_path = path;
 }

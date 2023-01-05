@@ -42,6 +42,9 @@ set(PROJECT_SOURCES
         mainwindow.ui
         Client.cpp
         Sender.cpp
+        dialog.cpp
+        dialog.h
+        dialog.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

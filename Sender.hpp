@@ -16,6 +16,9 @@ class Sender
         int _gui_cmd = -1;
         bool _if_gui = false;
 
+        std::string _frame_path = "./frames/";
+        bool _writing_frame = false;
+
         size_t _length = 0, _size = 0;
         void send();
         void receive();
@@ -29,4 +32,6 @@ class Sender
         Sender(boost::asio::io_context&, const std::string, const std::string, bool gui = false);
         ~Sender();
         void get_cmd(const int& value);
+        void set_frame_path(const std::string& path);
+        void set_frame_path(const char path[]);
 };

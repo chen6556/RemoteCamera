@@ -178,9 +178,9 @@ void Client::start_record()
     {
         return;
     }
-    if (!boost::filesystem::exists("./videos/"))
+    if (!boost::filesystem::exists(_video_path))
     {
-        boost::filesystem::create_directory("./videos/");
+        boost::filesystem::create_directory(_video_path);
     }
     _socket.send_to(boost::asio::buffer("odSendPara", 10), *_endpoints.begin());
     char message[8];
@@ -197,9 +197,9 @@ void Client::start_record()
     message[_size] = '\0';
     int height = std::atoi(message);
     
-    _size = std::count_if(boost::filesystem::directory_iterator("./videos/"), boost::filesystem::directory_iterator(), 
+    _size = std::count_if(boost::filesystem::directory_iterator(_video_path), boost::filesystem::directory_iterator(), 
                             [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
-    _writer->open(std::string("./videos/video_").append(std::to_string(_size)).append(".avi"), cv::VideoWriter::fourcc('M','J','P','G'), fps, cv::Size(width, height));
+    _writer->open(_video_path.append("/video_").append(std::to_string(_size)).append(".avi"), cv::VideoWriter::fourcc('M','J','P','G'), fps, cv::Size(width, height));
     _if_write_video = true;
 }
 
@@ -217,11 +217,20 @@ const cv::Mat& Client::frame() const
     return _frame;
 }
 
-void Client::decode_QR()
+void Client::set_video_path(const std::string& path)
 {
-    _if_decode_qr = !_if_decode_qr;
-    if (_qr_detector == nullptr)
+    if (_if_write_video)
     {
-        _qr_detector = new cv::QRCodeDetector();
-    } 
+        return;
+    }
+    _video_path = path;
+}
+
+void Client::set_video_path(const char path[])
+{
+    if (_if_write_video)
+    {
+        return;
+    }
+    _video_path = path;
 }

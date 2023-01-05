@@ -22,9 +22,10 @@ class Client
         bool _if_write_video = false;
         bool _if_gui = false, _shutdown = false;
 
+        std::string _video_path = "./videos/";
+
         void receive();
         void show();
-        void decode_QR();
         void start_record();
         void stop_record();
 
@@ -34,4 +35,6 @@ class Client
         ~Client();
         const cv::Mat& frame() const;
         void close();
+        void set_video_path(const std::string& path);
+        void set_video_path(const char path[]);
 };

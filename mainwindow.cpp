@@ -8,6 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    boost::property_tree::read_json("./config.json", _config);
 }
 
 MainWindow::~MainWindow()
@@ -47,6 +48,7 @@ void MainWindow::run_client()
 {
     boost::asio::io_context context;
     _client = new Client(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
+    _client->set_video_path(_config.get<std::string>("video_path"));
     context.run();
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
@@ -55,6 +57,7 @@ void MainWindow::run_sender()
 {
     boost::asio::io_context context;
     _sender = new Sender(context, ui->hostEdit->text().toStdString(), ui->portEdit->text().toStdString(), true);
+    _sender->set_frame_path(_config.get<std::string>("frame_path"));   
     context.run();
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
 }
@@ -133,4 +136,14 @@ void MainWindow::stopRecord()
     {
         _sender->get_cmd(2);
     }
+}
+
+void MainWindow::editPath()
+{
+    Dialog* dialog = new Dialog();
+    if (dialog->exec() > 0)
+    {
+        boost::property_tree::read_json("./config.json", _config);
+    }
+    delete dialog;
 }

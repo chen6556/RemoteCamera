@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "Client.hpp"
 #include "Sender.hpp"
+#include "dialog.h"
+#include <boost/property_tree/json_parser.hpp>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -17,7 +19,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-public slots:
+private slots:
     void connect();
     void download();
     void decodeQR();
@@ -25,11 +27,13 @@ public slots:
     void refreshGraphicsViewSize();
     void record();
     void stopRecord();
+    void editPath();
 
 private:
     Ui::MainWindow *ui;
     Client* _client = nullptr;
     Sender* _sender = nullptr;
+    boost::property_tree::ptree _config;
 
     cv::Mat _frame;
     bool _running = false;

@@ -4,5 +4,7 @@
     "quality":75,
     "fps":30,
     "width":640,
-    "height":480
+    "height":480,
+    "frame_path": ".\/frames\/",
+    "video_path": ".\/videos\/"
 }
