@@ -28,6 +28,8 @@ private slots:
     void record();
     void stopRecord();
     void editPath();
+    void openVideos();
+    void openFrames();
 
 private:
     Ui::MainWindow *ui;

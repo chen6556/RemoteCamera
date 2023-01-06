@@ -2,6 +2,8 @@
 #include "./ui_mainwindow.h"
 #include <thread>
 #include <chrono>
+#include <QDesktopServices>
+#include <boost/filesystem.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -146,4 +148,26 @@ void MainWindow::editPath()
         boost::property_tree::read_json("./config.json", _config);
     }
     delete dialog;
+}
+
+void MainWindow::openVideos()
+{
+    if (!boost::filesystem::exists(_config.get<std::string>("video_path")))
+    {
+        boost::filesystem::create_directory(_config.get<std::string>("video_path"));
+    }
+    QDesktopServices::openUrl(QUrl( 
+                                    boost::filesystem::system_complete(_config.get<std::string>("video_path")).generic_string().c_str(), 
+                                    QUrl::TolerantMode)); 
+}
+
+void MainWindow::openFrames()
+{
+    if (!boost::filesystem::exists(_config.get<std::string>("frame_path")))
+    {
+        boost::filesystem::create_directory(_config.get<std::string>("frame_path"));
+    }
+    QDesktopServices::openUrl(QUrl(
+                                    boost::filesystem::system_complete(_config.get<std::string>("frame_path")).generic_string().c_str(),
+                                    QUrl::TolerantMode)); 
 }

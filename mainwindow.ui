@@ -556,6 +556,8 @@
      <string>设置</string>
     </property>
     <addaction name="actionEditOutputPath"/>
+    <addaction name="actionOpenFrames"/>
+    <addaction name="actionOpenVideos"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -567,12 +569,22 @@
   </action>
   <action name="actionEditOutputPath">
    <property name="text">
-    <string>EditOutputPath</string>
+    <string>编辑保存路径</string>
    </property>
   </action>
   <action name="actionNull">
    <property name="text">
     <string>Null</string>
+   </property>
+  </action>
+  <action name="actionOpenFrames">
+   <property name="text">
+    <string>查看截图</string>
+   </property>
+  </action>
+  <action name="actionOpenVideos">
+   <property name="text">
+    <string>查看录屏</string>
    </property>
   </action>
  </widget>
@@ -722,6 +734,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionOpenFrames</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openFrames()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>449</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpenVideos</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>openVideos()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>449</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>connect()</slot>
@@ -732,5 +776,7 @@
   <slot>closeCamera()</slot>
   <slot>refreshGraphicsViewSize()</slot>
   <slot>editPath()</slot>
+  <slot>openFrames()</slot>
+  <slot>openVideos()</slot>
  </slots>
 </ui>
