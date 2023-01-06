@@ -1,5 +1,6 @@
 #include "dialog.h"
 #include "./ui_dialog.h"
+#include <boost/filesystem.hpp>
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -19,16 +20,46 @@ Dialog::~Dialog()
 void Dialog::accept()
 {
     _modified = 0;
-    if (_config.get<std::string>("video_path") != ui->videoPathEdit->text().toStdString())
+    std::string video_path = ui->videoPathEdit->text().toStdString();
+    if (_config.get<std::string>("video_path") != video_path)
     {
-        _config.put("video_path", ui->videoPathEdit->text().toStdString());
-        ++_modified;
+        if (boost::filesystem::is_directory(video_path))
+        {
+            _config.put("video_path", video_path);
+            ++_modified;
+        }
+        else if (!boost::filesystem::is_regular_file(video_path))
+        {
+            boost::filesystem::create_directory(video_path);
+            if (boost::filesystem::is_directory(video_path))
+            {
+                _config.put("video_path", video_path);
+                ++_modified;
+                boost::filesystem::remove(video_path);
+            }
+        }
     }
-    if (_config.get<std::string>("frame_path") != ui->framePathEdit->text().toStdString())
+
+    std::string frame_path = ui->framePathEdit->text().toStdString();
+    if (_config.get<std::string>("frame_path") != frame_path)
     {
-        _config.put("frame_path", ui->videoPathEdit->text().toStdString());
-        ++_modified;
+        if (boost::filesystem::is_directory(frame_path))
+        {
+            _config.put("frame_path", frame_path);
+            ++_modified;
+        }
+        else if (!boost::filesystem::is_regular_file(frame_path))
+        {
+            boost::filesystem::create_directory(frame_path);
+            if (boost::filesystem::is_directory(frame_path))
+            {
+                _config.put("frame_path", frame_path);
+                ++_modified;
+                boost::filesystem::remove(frame_path);
+            }
+        }
     }
+
     if (_modified > 0)
     {
         boost::property_tree::write_json("./config.json", _config);

@@ -4,12 +4,16 @@
 #include <chrono>
 #include <QDesktopServices>
 #include <boost/filesystem.hpp>
+#include <QRegularExpressionValidator>
+#include <QIntValidator>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    ui->hostEdit->setValidator(new QRegularExpressionValidator(QRegularExpression("^((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))*$")));
+    ui->portEdit->setValidator(new QIntValidator(0, 65536));
     boost::property_tree::read_json("./config.json", _config);
 }
 

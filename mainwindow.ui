@@ -187,10 +187,13 @@
            </font>
           </property>
           <property name="inputMethodHints">
-           <set>Qt::ImhDigitsOnly</set>
+           <set>Qt::ImhNone</set>
           </property>
           <property name="text">
            <string>127.0.0.1</string>
+          </property>
+          <property name="maxLength">
+           <number>15</number>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -238,10 +241,13 @@
            </font>
           </property>
           <property name="inputMethodHints">
-           <set>Qt::ImhDigitsOnly</set>
+           <set>Qt::ImhNone</set>
           </property>
           <property name="text">
            <string>1211</string>
+          </property>
+          <property name="maxLength">
+           <number>5</number>
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
