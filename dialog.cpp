@@ -19,50 +19,28 @@ Dialog::~Dialog()
 
 void Dialog::accept()
 {
-    _modified = 0;
+    char modified = 0;
     std::string video_path = ui->videoPathEdit->text().toStdString();
     if (_config.get<std::string>("video_path") != video_path)
     {
-        if (boost::filesystem::is_directory(video_path))
+        if (boost::filesystem::is_directory(video_path) || !boost::filesystem::is_regular_file(video_path))
         {
-            _config.put("video_path", video_path);
-            ++_modified;
-        }
-        else if (!boost::filesystem::is_regular_file(video_path))
-        {
-            boost::filesystem::create_directory(video_path);
-            if (boost::filesystem::is_directory(video_path))
-            {
-                _config.put("video_path", video_path);
-                ++_modified;
-                boost::filesystem::remove(video_path);
-            }
+            ++modified;
         }
     }
 
     std::string frame_path = ui->framePathEdit->text().toStdString();
     if (_config.get<std::string>("frame_path") != frame_path)
     {
-        if (boost::filesystem::is_directory(frame_path))
+        if (boost::filesystem::is_directory(frame_path) || !boost::filesystem::is_regular_file(frame_path))
         {
-            _config.put("frame_path", frame_path);
-            ++_modified;
-        }
-        else if (!boost::filesystem::is_regular_file(frame_path))
-        {
-            boost::filesystem::create_directory(frame_path);
-            if (boost::filesystem::is_directory(frame_path))
-            {
-                _config.put("frame_path", frame_path);
-                ++_modified;
-                boost::filesystem::remove(frame_path);
-            }
+            ++modified;
         }
     }
 
-    if (_modified > 0)
+    if (modified > 0)
     {
-        boost::property_tree::write_json("./config.json", _config);
+        emit pathChanged(ui->videoPathEdit->text() + '|' + ui->framePathEdit->text());
     }
     QDialog::accept();
 }
@@ -75,10 +53,4 @@ const std::string Dialog::frame_path() const
 const std::string Dialog::video_path() const
 {
     return _config.get<std::string>("video_path");
-}
-
-int Dialog::exec()
-{
-    QDialog::exec();
-    return _modified;
 }

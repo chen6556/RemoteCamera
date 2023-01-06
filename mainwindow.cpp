@@ -147,11 +147,11 @@ void MainWindow::stopRecord()
 void MainWindow::editPath()
 {
     Dialog* dialog = new Dialog();
-    if (dialog->exec() > 0)
-    {
-        boost::property_tree::read_json("./config.json", _config);
-    }
+    QObject::connect(dialog, &Dialog::pathChanged, this, &MainWindow::refreshPath);
+    dialog->exec();
+    this->disconnect(dialog);
     delete dialog;
+    dialog = nullptr;
 }
 
 void MainWindow::openVideos()
@@ -174,4 +174,12 @@ void MainWindow::openFrames()
     QDesktopServices::openUrl(QUrl(
                                     boost::filesystem::system_complete(_config.get<std::string>("frame_path")).generic_string().c_str(),
                                     QUrl::TolerantMode)); 
+}
+
+void MainWindow::refreshPath(QString path)
+{
+    QStringList paths = path.split('|');
+    _config.put("video_path", paths[0].toStdString());
+    _config.put("frame_path", paths[1].toStdString());
+    boost::property_tree::write_json("./config.json", _config);
 }

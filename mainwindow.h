@@ -30,6 +30,7 @@ private slots:
     void editPath();
     void openVideos();
     void openFrames();
+    void refreshPath(QString path);
 
 private:
     Ui::MainWindow *ui;

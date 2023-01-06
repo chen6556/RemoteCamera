@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <string>
 #include <boost/property_tree/json_parser.hpp>
+#include <QString>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class Dialog; }
@@ -18,7 +19,9 @@ public:
     ~Dialog();
     const std::string frame_path() const;
     const std::string video_path() const;
-    int exec();
+
+signals:
+    void pathChanged(QString path);
 
 private slots:
     void accept();
@@ -27,6 +30,5 @@ private:
     Ui::Dialog *ui;
 
     boost::property_tree::ptree _config;
-    int _modified = 0;
 };
 #endif // DIALOG_H
