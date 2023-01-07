@@ -562,25 +562,21 @@
      <string>设置</string>
     </property>
     <addaction name="actionEditOutputPath"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>查看</string>
+    </property>
     <addaction name="actionOpenFrames"/>
     <addaction name="actionOpenVideos"/>
    </widget>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionOutputPath">
-   <property name="text">
-    <string>OutputPath</string>
-   </property>
-  </action>
   <action name="actionEditOutputPath">
    <property name="text">
     <string>编辑保存路径</string>
-   </property>
-  </action>
-  <action name="actionNull">
-   <property name="text">
-    <string>Null</string>
    </property>
   </action>
   <action name="actionOpenFrames">

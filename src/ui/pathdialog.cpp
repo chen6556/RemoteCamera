@@ -1,10 +1,10 @@
-#include "dialog.h"
-#include "./ui_dialog.h"
+#include "ui/pathdialog.h"
+#include "./ui_pathdialog.h"
 #include <boost/filesystem.hpp>
 
-Dialog::Dialog(QWidget *parent)
+PathDialog::PathDialog(QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::Dialog)
+    , ui(new Ui::PathDialog)
 {
     ui->setupUi(this);
     boost::property_tree::read_json("./config.json", _config);
@@ -12,12 +12,12 @@ Dialog::Dialog(QWidget *parent)
     ui->framePathEdit->setText(_config.get<std::string>("frame_path").c_str());
 }
 
-Dialog::~Dialog()
+PathDialog::~PathDialog()
 {
     delete ui;
 }
 
-void Dialog::accept()
+void PathDialog::accept()
 {
     char modified = 0;
     std::string video_path = ui->videoPathEdit->text().toStdString();
@@ -45,12 +45,12 @@ void Dialog::accept()
     QDialog::accept();
 }
 
-const std::string Dialog::frame_path() const
+const std::string PathDialog::frame_path() const
 {
     return _config.get<std::string>("frame_path");
 }
 
-const std::string Dialog::video_path() const
+const std::string PathDialog::video_path() const
 {
     return _config.get<std::string>("video_path");
 }

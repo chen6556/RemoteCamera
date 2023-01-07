@@ -2,9 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "Client.hpp"
-#include "Sender.hpp"
-#include "dialog.h"
+#include "base/Client.hpp"
+#include "base/Sender.hpp"
+#include "ui/pathdialog.h"
 #include <boost/property_tree/json_parser.hpp>
 
 QT_BEGIN_NAMESPACE

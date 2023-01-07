@@ -1,5 +1,5 @@
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef PATHDIALOG_H
+#define PATHDIALOG_H
 
 #include <QDialog>
 #include <string>
@@ -7,16 +7,16 @@
 #include <QString>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class Dialog; }
+namespace Ui { class PathDialog; }
 QT_END_NAMESPACE
 
-class Dialog : public QDialog
+class PathDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    Dialog(QWidget *parent = nullptr);
-    ~Dialog();
+    PathDialog(QWidget *parent = nullptr);
+    ~PathDialog();
     const std::string frame_path() const;
     const std::string video_path() const;
 
@@ -27,7 +27,7 @@ private slots:
     void accept();
 
 private:
-    Ui::Dialog *ui;
+    Ui::PathDialog *ui;
 
     boost::property_tree::ptree _config;
 };

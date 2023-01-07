@@ -1,5 +1,4 @@
-#include "Sender.hpp"
-#include <iostream>
+#include "base/Client.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -12,9 +11,10 @@ int main(int argc, char *argv[])
     {
         boost::asio::io_context context;
 
-        Sender s(context, argv[1], argv[2]);
+        Client c(context, argv[1], argv[2]);
 
         context.run();
+        
     }
     catch (std::exception& e)
     {

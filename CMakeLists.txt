@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(RemoteCamera VERSION 1.4.0)
+project(RemoteCamera VERSION 1.6.0)
 
 cmake_policy(SET CMP0074 NEW)
 enable_testing()
@@ -23,7 +23,6 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
 # OpenCV库
 set(OpenCV_DIR "D:/CPPLibs/opencv460/opencv/build/x64/vc16/lib") # 找到lib文件目录
-# set(OpenCV_DIR "D:/CPPLibs/opencv/build/x64/vc16/lib")
 find_package(OpenCV REQUIRED)	# 找到OpenCV库
 include_directories(${OpenCV_INCLUDE_DIRS})
 
@@ -35,35 +34,19 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 
-set(PROJECT_SOURCES
-        main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        Client.cpp
-        Sender.cpp
-        dialog.cpp
-        dialog.h
-        dialog.ui
-)
+add_subdirectory(src)
+include_directories(include)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(ClientGUI
         MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
+        src/main.cpp
+        include/ui/mainwindow.h
+        include/ui/pathdialog.h
+        ${_UI_SOURCES}
+        ${_BASE_SOURCES}
         ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc
     )
-
-else()
-    if(ANDROID)
-        add_library(ClientGUI SHARED
-            ${PROJECT_SOURCES}
-        )
-    else()
-        add_executable(Client
-            ${PROJECT_SOURCES}
-        )
-    endif()
 endif()
 
 target_link_libraries(ClientGUI PRIVATE Qt${QT_VERSION_MAJOR}::Widgets ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
@@ -80,13 +63,13 @@ if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(ClientGUI)
 endif()
 
-add_executable(RemoteCamera RunRemoteCamera.cpp RemoteCamera.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
+add_executable(RemoteCamera src/RunRemoteCamera.cpp src/base/RemoteCamera.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(RemoteCamera ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(Client RunClient.cpp Client.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
+add_executable(Client src/RunClient.cpp src/base/Client.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(Client ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
-add_executable(Sender RunSender.cpp Sender.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
+add_executable(Sender src/RunSender.cpp src/base/Sender.cpp ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc)
 target_link_libraries(Sender ${OpenCV_LIBRARIES} ${Boost_LIBRARIES})
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})

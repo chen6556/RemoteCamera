@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "ui/mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <thread>
 #include <chrono>
@@ -146,8 +146,8 @@ void MainWindow::stopRecord()
 
 void MainWindow::editPath()
 {
-    Dialog* dialog = new Dialog();
-    QObject::connect(dialog, &Dialog::pathChanged, this, &MainWindow::refreshPath);
+    PathDialog* dialog = new PathDialog();
+    QObject::connect(dialog, &PathDialog::pathChanged, this, &MainWindow::refreshPath);
     dialog->exec();
     this->disconnect(dialog);
     delete dialog;
