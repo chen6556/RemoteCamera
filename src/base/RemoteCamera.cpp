@@ -1,4 +1,4 @@
-#include "RemoteCamera.hpp"
+#include "base/RemoteCamera.hpp"
 #include <vector>
 #include <iostream>
 
@@ -28,6 +28,7 @@ RemoteCamera::~RemoteCamera()
     _video_capture.release();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
+    // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
     _context_ptr->stop();
 }
 
@@ -81,7 +82,6 @@ void RemoteCamera::receive()
           {
             if (_running && std::strncmp("Next Frame", _order, 10) == 0)
             {
-                 
                 if (_order_length > 0)
                 {
                     _socket.async_send_to(boost::asio::buffer(_message, _order_length), _sender,
@@ -91,7 +91,7 @@ void RemoteCamera::receive()
                 else
                 {
                     send_frame(); 
-                }
+                } 
             }
             else if (std::strncmp("od", _order, 2) == 0)
             {

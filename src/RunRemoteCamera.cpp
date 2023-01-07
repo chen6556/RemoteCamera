@@ -1,4 +1,4 @@
-#include "RemoteCamera.hpp"
+#include "base/RemoteCamera.hpp"
 
 int main(int, char**) {
     try

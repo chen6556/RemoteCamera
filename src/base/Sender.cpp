@@ -1,13 +1,24 @@
-#include "Sender.hpp"
+#include "base/Sender.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <boost/filesystem.hpp>
 
-Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[])
+Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
     _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
+    _if_gui = gui;
+    receive();
+    send();
+}
+
+Sender::Sender(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
+: _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
+{
+    _context_ptr = &context;
+    _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
+    _if_gui = gui;
     receive();
     send();
 }
@@ -18,6 +29,7 @@ Sender::~Sender()
     {
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         _socket.close();
+        // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
     }
     if (!_context_ptr->stopped())
     {
@@ -27,13 +39,48 @@ Sender::~Sender()
 
 void Sender::send()
 {
-    std::cout << "Input Order: ";
     _cmd.clear();
-    std::getline(std::cin, _cmd);
+    if (!_if_gui)
+    {
+        std::cout << "Input Order: ";
+        std::getline(std::cin, _cmd);
+    }
+    else
+    {
+        switch (_gui_cmd)
+        {
+        case -2:
+            _cmd = "Close";
+            _gui_cmd = -1;
+            break;
+        case 0:
+            _cmd = "Download";
+            _gui_cmd = -1;
+            break;
+        case 1:
+            _cmd = "Re";
+            _gui_cmd = -1;
+            break;
+        case 2:
+            _cmd = "StopRe";
+            _gui_cmd = -1;
+            break;
+        case 3:
+            _cmd = "QR";
+            _gui_cmd = -1;
+            break;
+        default:
+            break;
+        }
+
+    }
     if (_cmd.length() > 62 || _cmd == "Help")
     {
         _cmd.clear();
-        help();
+        if (!_if_gui)
+        {
+            help();
+        }
     }
     else if (_cmd == "Exit")
     {
@@ -42,9 +89,20 @@ void Sender::send()
     else if (_cmd == "Close")
     {
         close();
+        return;
     }
     
-    _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd), 2+_cmd.length()), *_endpoints.begin(), 
+    if (_cmd.empty())
+    {
+        _socket.async_send_to(boost::asio::buffer(std::string(""), 0), *_endpoints.begin(), 
+                    [this](boost::system::error_code, std::size_t)
+                    {
+                        send();
+                    });
+    }
+    else
+    {
+        _socket.async_send_to(boost::asio::buffer(std::string("od").append(_cmd).c_str(), 2+_cmd.length()), *_endpoints.begin(), 
                         [this](boost::system::error_code ec, std::size_t bytes_recvd)
                         {
                             if (!ec && _cmd == "Download")
@@ -53,6 +111,7 @@ void Sender::send()
                             }
                             send();
                         });  
+    }
 }
 
 void Sender::receive()
@@ -65,9 +124,12 @@ void Sender::receive()
           {
             if (std::strncmp("rp", _cache, 2) == 0)
             {
-                for (size_t i = 2; i < bytes_recvd; ++i)
-                {              
-                    std::cout << _cache[i];
+                if (!_if_gui)
+                {
+                    for (size_t i = 2; i < bytes_recvd; ++i)
+                    {              
+                        std::cout << _cache[i];
+                    }
                 }
                 std::fill_n(_cache, 64, '\0');
             }
@@ -78,6 +140,10 @@ void Sender::receive()
 
 void Sender::help() const
 {
+    if (_if_gui)
+    {
+        return;
+    }
     std::cout << "Help:" << std::endl;
     std::cout << "    - Exit : Close Sender." << std::endl;
     std::cout << "    - Para : Get RemoteCamera parameters." << std::endl;
@@ -92,12 +158,19 @@ void Sender::help() const
 
 void Sender::exit()
 {
-    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _context_ptr->stop();
+    if (_socket.is_open())
+    {
+        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
+    }
+    if (!_context_ptr->stopped())
+    {
+        _context_ptr->stop();
+    }
 }
 
 void Sender::download()
 {
+    _writing_frame = true;
     _socket.receive_from(boost::asio::buffer(_cache, 64), _sender_endpoint);
     _cache[6] = '\0';
     _length = std::atoi(_cache);
@@ -110,18 +183,57 @@ void Sender::download()
         code.insert(code.end(), _cache, _cache + _size);
     }
     cv::Mat frame = cv::imdecode(code, cv::IMREAD_COLOR);
-    if (!boost::filesystem::exists("./frames/"))
+    if (!boost::filesystem::exists(_frame_path))
     {
-        boost::filesystem::create_directory("./frames/");
+        boost::filesystem::create_directory(_frame_path);
     }
-    _size = std::count_if(boost::filesystem::directory_iterator("./frames/"), boost::filesystem::directory_iterator(), 
+    _size = std::count_if(boost::filesystem::directory_iterator(_frame_path), boost::filesystem::directory_iterator(), 
                             [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
-    cv::imwrite(std::string("./frames/frame_").append(std::to_string(_size)).append(".png"), frame, params);
+    cv::imwrite(_frame_path.append("/frame_").append(std::to_string(_size)).append(".png"), frame, params);
+    _writing_frame = false;
 }
 
 void Sender::close()
 {
     _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _context_ptr->stop();
+    if (!_if_gui)
+    {
+        _context_ptr->stop();
+    }
+}
+
+void Sender::get_cmd(const int& value)
+{
+    switch (value)
+    {
+    case -2: // Close
+    case 0: // Download
+    case 1: // Re
+    case 2: // StopRe
+    case 3: // QR
+        _gui_cmd = value;
+        break;
+    default:
+        _gui_cmd = -1;
+        break;
+    }
+}
+
+void Sender::set_frame_path(const std::string& path)
+{
+    if (_writing_frame)
+    {
+        return;
+    }
+    _frame_path = path;
+}
+
+void Sender::set_frame_path(const char path[])
+{
+    if (_writing_frame)
+    {
+        return;
+    }
+    _frame_path = path;
 }
