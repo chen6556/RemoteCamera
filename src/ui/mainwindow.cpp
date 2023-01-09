@@ -176,10 +176,23 @@ void MainWindow::openFrames()
                                     QUrl::TolerantMode)); 
 }
 
-void MainWindow::refreshPath(QString path)
+void MainWindow::refreshPath(const char flag, QString path)
 {
     QStringList paths = path.split('|');
-    _config.put("video_path", paths[0].toStdString());
-    _config.put("frame_path", paths[1].toStdString());
+    switch (flag)
+    {
+    case 3:
+        _config.put("video_path", path.toStdString());
+        break;
+    case 4:
+        _config.put("frame_path", path.toStdString());
+        break;
+    case 7:
+        _config.put("video_path", paths[0].toStdString());
+        _config.put("frame_path", paths[1].toStdString());
+        break;
+    default:
+        break;
+    }
     boost::property_tree::write_json("./config.json", _config);
 }

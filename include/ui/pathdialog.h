@@ -21,7 +21,7 @@ public:
     const std::string video_path() const;
 
 signals:
-    void pathChanged(QString path);
+    void pathChanged(const char flag, QString path);
 
 private slots:
     void accept();

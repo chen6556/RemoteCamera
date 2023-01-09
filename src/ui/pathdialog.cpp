@@ -25,7 +25,7 @@ void PathDialog::accept()
     {
         if (boost::filesystem::is_directory(video_path) || !boost::filesystem::is_regular_file(video_path))
         {
-            ++modified;
+            modified += 3;
         }
     }
 
@@ -34,13 +34,23 @@ void PathDialog::accept()
     {
         if (boost::filesystem::is_directory(frame_path) || !boost::filesystem::is_regular_file(frame_path))
         {
-            ++modified;
+            modified += 4;
         }
     }
 
-    if (modified > 0)
+    switch (modified)
     {
-        emit pathChanged(ui->videoPathEdit->text() + '|' + ui->framePathEdit->text());
+    case 3:
+        emit pathChanged(3, ui->videoPathEdit->text());
+        break;
+    case 4:
+        emit pathChanged(4, ui->framePathEdit->text());
+        break;
+    case 7:
+        emit pathChanged(7, ui->videoPathEdit->text() + '|' + ui->framePathEdit->text());
+        break;
+    default:
+        break;
     }
     QDialog::accept();
 }
