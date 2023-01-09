@@ -1,7 +1,7 @@
 #include "base/Sender.hpp"
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
@@ -183,12 +183,12 @@ void Sender::download()
         code.insert(code.end(), _cache, _cache + _size);
     }
     cv::Mat frame = cv::imdecode(code, cv::IMREAD_COLOR);
-    if (!boost::filesystem::exists(_frame_path))
+    if (!std::filesystem::exists(_frame_path))
     {
-        boost::filesystem::create_directory(_frame_path);
+        std::filesystem::create_directory(_frame_path);
     }
-    _size = std::count_if(boost::filesystem::directory_iterator(_frame_path), boost::filesystem::directory_iterator(), 
-                            [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
+    _size = std::count_if(std::filesystem::directory_iterator(_frame_path), std::filesystem::directory_iterator(), 
+                            [](const std::filesystem::path& p){return std::filesystem::is_regular_file(p);});
     cv::imwrite(_frame_path.append("/frame_").append(std::to_string(_size)).append(".png"), frame, params);
     _writing_frame = false;
 }

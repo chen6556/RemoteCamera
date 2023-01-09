@@ -1,6 +1,6 @@
 #include "ui/pathdialog.h"
 #include "./ui_pathdialog.h"
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 PathDialog::PathDialog(QWidget *parent)
     : QDialog(parent)
@@ -23,7 +23,7 @@ void PathDialog::accept()
     std::string video_path = ui->videoPathEdit->text().toStdString();
     if (_config.get<std::string>("video_path") != video_path)
     {
-        if (boost::filesystem::is_directory(video_path) || !boost::filesystem::is_regular_file(video_path))
+        if (std::filesystem::is_directory(video_path) || !std::filesystem::is_regular_file(video_path))
         {
             modified += 3;
         }
@@ -32,7 +32,7 @@ void PathDialog::accept()
     std::string frame_path = ui->framePathEdit->text().toStdString();
     if (_config.get<std::string>("frame_path") != frame_path)
     {
-        if (boost::filesystem::is_directory(frame_path) || !boost::filesystem::is_regular_file(frame_path))
+        if (std::filesystem::is_directory(frame_path) || !std::filesystem::is_regular_file(frame_path))
         {
             modified += 4;
         }

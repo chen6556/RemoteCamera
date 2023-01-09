@@ -3,7 +3,7 @@
 #include <thread>
 #include <chrono>
 #include <QDesktopServices>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <QRegularExpressionValidator>
 #include <QIntValidator>
 
@@ -156,24 +156,24 @@ void MainWindow::editPath()
 
 void MainWindow::openVideos()
 {
-    if (!boost::filesystem::exists(_config.get<std::string>("video_path")))
+    if (!std::filesystem::exists(_config.get<std::string>("video_path")))
     {
-        boost::filesystem::create_directory(_config.get<std::string>("video_path"));
+        std::filesystem::create_directory(_config.get<std::string>("video_path"));
     }
     QDesktopServices::openUrl(QUrl( 
-                                    boost::filesystem::system_complete(_config.get<std::string>("video_path")).generic_string().c_str(), 
+                                    std::filesystem::canonical(_config.get<std::string>("video_path")).generic_string().c_str(), 
                                     QUrl::TolerantMode)); 
 }
 
 void MainWindow::openFrames()
 {
-    if (!boost::filesystem::exists(_config.get<std::string>("frame_path")))
+    if (!std::filesystem::exists(_config.get<std::string>("frame_path")))
     {
-        boost::filesystem::create_directory(_config.get<std::string>("frame_path"));
+        std::filesystem::create_directory(_config.get<std::string>("frame_path"));
     }
     QDesktopServices::openUrl(QUrl(
-                                    boost::filesystem::system_complete(_config.get<std::string>("frame_path")).generic_string().c_str(),
-                                    QUrl::TolerantMode)); 
+                                    std::filesystem::canonical(_config.get<std::string>("frame_path")).generic_string().c_str(),
+                                    QUrl::TolerantMode));
 }
 
 void MainWindow::refreshPath(const char flag, QString path)

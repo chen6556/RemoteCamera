@@ -1,7 +1,7 @@
 #include "base/Client.hpp"
 #include <string>
 #include <iostream>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <chrono>
 
 Client::Client(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
@@ -13,7 +13,7 @@ Client::Client(boost::asio::io_context & context, const char ip[], const char po
     _if_gui = gui;
     receive();
     _writer->release();
-    boost::filesystem::remove("./temp000.avi");
+    std::filesystem::remove("./temp000.avi");
 }
 
 Client::Client(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
@@ -25,7 +25,7 @@ Client::Client(boost::asio::io_context & context, const std::string ip, const st
     _if_gui = gui;
     receive();
     _writer->release();
-    boost::filesystem::remove("./temp000.avi");
+    std::filesystem::remove("./temp000.avi");
 }
 
 Client::~Client()
@@ -178,9 +178,9 @@ void Client::start_record()
     {
         return;
     }
-    if (!boost::filesystem::exists(_video_path))
+    if (!std::filesystem::exists(_video_path))
     {
-        boost::filesystem::create_directory(_video_path);
+        std::filesystem::create_directory(_video_path);
     }
     _socket.send_to(boost::asio::buffer("odSendPara", 10), *_endpoints.begin());
     char message[8];
@@ -197,8 +197,8 @@ void Client::start_record()
     message[_size] = '\0';
     int height = std::atoi(message);
     
-    _size = std::count_if(boost::filesystem::directory_iterator(_video_path), boost::filesystem::directory_iterator(), 
-                            [](const boost::filesystem::path& p){return boost::filesystem::is_regular_file(p);});
+    _size = std::count_if(std::filesystem::directory_iterator(_video_path), std::filesystem::directory_iterator(), 
+                            [](const std::filesystem::path& p){return std::filesystem::is_regular_file(p);});
     _writer->open(_video_path.append("/video_").append(std::to_string(_size)).append(".avi"), cv::VideoWriter::fourcc('M','J','P','G'), fps, cv::Size(width, height));
     _if_write_video = true;
 }
