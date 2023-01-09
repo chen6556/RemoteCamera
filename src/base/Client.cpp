@@ -199,7 +199,7 @@ void Client::start_record()
     
     _size = std::count_if(std::filesystem::directory_iterator(_video_path), std::filesystem::directory_iterator(), 
                             [](const std::filesystem::path& p){return std::filesystem::is_regular_file(p);});
-    _writer->open(_video_path.append("/video_").append(std::to_string(_size)).append(".avi"), cv::VideoWriter::fourcc('M','J','P','G'), fps, cv::Size(width, height));
+    _writer->open(_video_path.substr().append("/video_").append(std::to_string(_size)).append(".avi"), cv::VideoWriter::fourcc('M','J','P','G'), fps, cv::Size(width, height));
     _if_write_video = true;
 }
 

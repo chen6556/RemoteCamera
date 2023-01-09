@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.0)
-project(RemoteCamera VERSION 1.6.2)
+project(RemoteCamera VERSION 1.6.3)
 
 cmake_policy(SET CMP0074 NEW)
 enable_testing()

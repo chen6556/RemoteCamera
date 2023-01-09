@@ -189,7 +189,7 @@ void Sender::download()
     }
     _size = std::count_if(std::filesystem::directory_iterator(_frame_path), std::filesystem::directory_iterator(), 
                             [](const std::filesystem::path& p){return std::filesystem::is_regular_file(p);});
-    cv::imwrite(_frame_path.append("/frame_").append(std::to_string(_size)).append(".png"), frame, params);
+    cv::imwrite(_frame_path.substr().append("/frame_").append(std::to_string(_size)).append(".png"), frame, params);
     _writing_frame = false;
 }
 
