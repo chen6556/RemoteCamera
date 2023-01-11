@@ -6,20 +6,16 @@
 Sender::Sender(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
-    _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
     _if_gui = gui;
-    receive();
     send();
 }
 
 Sender::Sender(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
-: _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
+    : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
-    _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
     _if_gui = gui;
-    receive();
     send();
 }
 
@@ -30,10 +26,6 @@ Sender::~Sender()
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         _socket.close();
         // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
-    }
-    if (!_context_ptr->stopped())
-    {
-        _context_ptr->stop();
     }
 }
 
@@ -85,6 +77,7 @@ void Sender::send()
     else if (_cmd == "Exit")
     {
         exit();
+        return;
     }
     else if (_cmd == "Close")
     {
@@ -114,30 +107,6 @@ void Sender::send()
     }
 }
 
-void Sender::receive()
-{
-    _socket.async_receive_from(
-        boost::asio::buffer(_cache, 64), _sender_endpoint,
-        [this](boost::system::error_code ec, std::size_t bytes_recvd)
-        {
-          if (!ec)
-          {
-            if (std::strncmp("rp", _cache, 2) == 0)
-            {
-                if (!_if_gui)
-                {
-                    for (size_t i = 2; i < bytes_recvd; ++i)
-                    {              
-                        std::cout << _cache[i];
-                    }
-                }
-                std::fill_n(_cache, 64, '\0');
-            }
-          }
-          receive();
-        }); 
-}
-
 void Sender::help() const
 {
     if (_if_gui)
@@ -158,14 +127,8 @@ void Sender::help() const
 
 void Sender::exit()
 {
-    if (_socket.is_open())
-    {
-        _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    }
-    if (!_context_ptr->stopped())
-    {
-        _context_ptr->stop();
-    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+    _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
 }
 
 void Sender::download()
@@ -197,10 +160,6 @@ void Sender::close()
 {
     _socket.async_send_to(boost::asio::buffer("odCloseCam", 10), *_endpoints.begin(), [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    if (!_if_gui)
-    {
-        _context_ptr->stop();
-    }
 }
 
 void Sender::get_cmd(const int& value)

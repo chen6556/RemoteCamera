@@ -7,7 +7,6 @@
 class Client
 {
     private:
-        boost::asio::io_context* _context_ptr;
         boost::asio::ip::udp::socket _socket;
         boost::asio::ip::udp::resolver _resolver;
         boost::asio::ip::udp::resolver::results_type _endpoints;

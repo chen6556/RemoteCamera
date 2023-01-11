@@ -5,7 +5,6 @@
 RemoteCamera::RemoteCamera(boost::asio::io_context& context, short port)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port))
 {
-    _context_ptr = &context;
     boost::property_tree::read_json("./config.json", _config);
     _video_capture.open(_config.get<u_char>("index"));
     _video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M','P','4','2'));
@@ -24,12 +23,12 @@ RemoteCamera::RemoteCamera(boost::asio::io_context& context, short port)
 
 RemoteCamera::~RemoteCamera()
 {
+    _shutdown = true;
     _running = false;
     _video_capture.release();
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
     _socket.close();
     // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
-    _context_ptr->stop();
 }
 
 void RemoteCamera::release()
@@ -64,12 +63,12 @@ void RemoteCamera::record()
 
 void RemoteCamera::close()
 {
+    _shutdown = true;
     _socket.async_receive_from(boost::asio::buffer(_order, 64), _sender, [](boost::system::error_code, std::size_t){}); 
     _running = false;
     _video_capture.release();    
     _socket.async_send_to(boost::asio::buffer("odClose", 7), _sender, [](boost::system::error_code, std::size_t){});
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    _context_ptr->stop();
 }
 
 void RemoteCamera::receive()
@@ -78,52 +77,55 @@ void RemoteCamera::receive()
         boost::asio::buffer(_order, 64), _sender,
         [this](boost::system::error_code ec, std::size_t bytes_recvd)
         {
-          if (!ec)
-          {
-            if (_running && std::strncmp("Next Frame", _order, 10) == 0)
+            if (!ec)
             {
-                if (_order_length > 0)
+                if (_running && std::strncmp("Next Frame", _order, 10) == 0)
                 {
-                    _socket.async_send_to(boost::asio::buffer(_message, _order_length), _sender,
-                            [](boost::system::error_code, std::size_t ){});
-                    _order_length = 0;
+                    if (_order_length > 0)
+                    {
+                        _socket.async_send_to(boost::asio::buffer(_message, _order_length), _sender,
+                                [](boost::system::error_code, std::size_t ){});
+                        _order_length = 0;
+                    }
+                    else
+                    {
+                        send_frame(); 
+                    } 
                 }
-                else
+                else if (std::strncmp("od", _order, 2) == 0)
                 {
-                    send_frame(); 
-                } 
+                    if (std::strncmp("odPara", _order, 6) == 0)
+                    {
+                        report_parameters();
+                    }
+                    else if (std::strncmp("odSendPara", _order, 10) == 0)
+                    {
+                        send_parameters();
+                    }
+                    else if (std::strncmp("odCloseCam", _order, 10) == 0) 
+                    {
+                        close();
+                    }
+                    else if (std::strncmp("odReConfig", _order, 10) == 0)
+                    {
+                        refresh_config();
+                    }
+                    else if (std::strncmp("odDownload", _order, 10) == 0)
+                    {
+                        download();
+                    }
+                    else
+                    {
+                        _order_length = bytes_recvd;
+                        std::strcpy(_message, _order);
+                    }
+                }
             }
-            else if (std::strncmp("od", _order, 2) == 0)
+            std::fill_n(_order, 64, '\0');
+            if (!_shutdown)
             {
-                if (std::strncmp("odPara", _order, 6) == 0)
-                {
-                    report_parameters();
-                }
-                else if (std::strncmp("odSendPara", _order, 10) == 0)
-                {
-                    send_parameters();
-                }
-                else if (std::strncmp("odCloseCam", _order, 10) == 0) 
-                {
-                    close();
-                }
-                else if (std::strncmp("odReConfig", _order, 10) == 0)
-                {
-                    refresh_config();
-                }
-                else if (std::strncmp("odDownload", _order, 10) == 0)
-                {
-                    download();
-                }
-                else
-                {
-                    _order_length = bytes_recvd;
-                    std::strcpy(_message, _order);
-                }
+                receive();
             }
-          }
-          std::fill_n(_order, 64, '\0');
-          receive();
         }); 
 }
 

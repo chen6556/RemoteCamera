@@ -6,7 +6,6 @@
 class Sender
 {
     private:
-        boost::asio::io_context* _context_ptr;
         boost::asio::ip::udp::socket _socket;
         boost::asio::ip::udp::resolver _resolver;
         boost::asio::ip::udp::resolver::results_type _endpoints;
@@ -21,7 +20,6 @@ class Sender
 
         size_t _length = 0, _size = 0;
         void send();
-        void receive();
         void help() const;
         void download();     
         void close();   

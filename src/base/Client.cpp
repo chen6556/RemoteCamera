@@ -7,7 +7,6 @@
 Client::Client(boost::asio::io_context & context, const char ip[], const char port[], bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
-    _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
     _code.reserve(89600);
     _if_gui = gui;
@@ -19,7 +18,6 @@ Client::Client(boost::asio::io_context & context, const char ip[], const char po
 Client::Client(boost::asio::io_context & context, const std::string ip, const std::string port, bool gui)
     : _socket(context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), 0)), _resolver(context)
 {
-    _context_ptr = &context;
     _endpoints = _resolver.resolve(boost::asio::ip::udp::v4(), ip, port);
     _code.reserve(89600);
     _if_gui = gui;
@@ -46,10 +44,6 @@ Client::~Client()
         _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
         _socket.close();  
         // _socket.release(); // 此方法只支持windows10及更高版本,故弃用
-    }
-    if (!_context_ptr->stopped())
-    {
-        _context_ptr->stop();
     }
 }
 
@@ -166,10 +160,6 @@ void Client::close()
         cv::destroyAllWindows();
     }
     _socket.shutdown(boost::asio::ip::udp::socket::shutdown_both);
-    if (!_if_gui)
-    {
-        _context_ptr->stop();
-    }
 }
 
 void Client::start_record()

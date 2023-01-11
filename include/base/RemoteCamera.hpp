@@ -11,7 +11,7 @@ class RemoteCamera
         cv::VideoCapture _video_capture;
         boost::property_tree::ptree _config;
         cv::Mat _frame;
-        bool _running = true;
+        bool _running = true, _shutdown = false;
         std::thread _record_thread;
         u_char _cache[1024];
         char _order[64];
@@ -21,7 +21,6 @@ class RemoteCamera
         std::vector<int> _params;
         int _quality;
 
-        boost::asio::io_context* _context_ptr;
         boost::asio::ip::udp::socket _socket;
         boost::asio::ip::udp::endpoint _sender;
 
