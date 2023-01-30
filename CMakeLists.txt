@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.0)
-project(RemoteCamera VERSION 1.7.0)
+project(RemoteCamera VERSION 1.8.0)
 
 cmake_policy(SET CMP0074 NEW)
 enable_testing()
@@ -35,16 +35,18 @@ include_directories(${Boost_INCLUDE_DIRS})
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/output/)
 
 add_subdirectory(src)
-include_directories(include)
+include_directories(inc)
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(ClientGUI
         MANUAL_FINALIZATION
         src/main.cpp
-        include/ui/mainwindow.h
-        include/ui/pathdialog.h
+        inc/ui/mainwindow.h
+        inc/ui/pathdialog.h
+        inc/ui/activatedialog.h
         ${_UI_SOURCES}
         ${_BASE_SOURCES}
+        src/Dongle/Dongle.cpp
         ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc
     )
 endif()

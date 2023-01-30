@@ -5,6 +5,7 @@
 #include "base/Client.hpp"
 #include "base/Sender.hpp"
 #include "ui/pathdialog.h"
+#include "ui/activatedialog.h"
 #include <boost/property_tree/json_parser.hpp>
 
 QT_BEGIN_NAMESPACE
