@@ -109,50 +109,28 @@ std::string Dongle::read_passwd(const char path[]) const
 
 const bool Dongle::verify(const char key[])
 {   
-    if (strlen(key) == 32)
+    char temp[48] = {'\0'};
+    for (size_t i = 0, j = 0, length = strlen(key); i < length; ++i)
     {
-        return encode(key) == validate_code();
-    }
-    else if (strlen(key) == 35)
-    {
-        char temp[33] = {'\0'};
-        for (size_t i = 0, j = 0; i < 35; ++i)
+        if ( key[i] != '-')
         {
-            if ( key[i] != '-')
-            {
-                temp[j++] = key[i];
-            }
+            temp[j++] = key[i];
         }
-        return encode(temp) == validate_code();
     }
-    else
-    {
-        return false;
-    }
+    return encode(temp) == validate_code();
 }
 
 const bool Dongle::verify(const std::string& key)
 {
-    if (key.length() == 32)
+    char temp[48] = {'\0'};
+    for (size_t i = 0, j = 0, length = key.length(); i < length; ++i)
     {
-        return encode(key) == validate_code();
-    }
-    else if (key.length() == 35)
-    {
-        char temp[33] = {'\0'};
-        for (size_t i = 0, j = 0; i < 35; ++i)
+        if ( key[i] != '-')
         {
-            if ( key[i] != '-')
-            {
-                temp[j++] = key[i];
-            }
+            temp[j++] = key[i];
         }
-        return encode(temp) == validate_code();
     }
-    else
-    {
-        return false;
-    }
+    return encode(temp) == validate_code();
 }
 
 const std::string Dongle::build_passwd(const bool fmt)
