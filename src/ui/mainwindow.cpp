@@ -6,7 +6,6 @@
 #include <filesystem>
 #include <QRegularExpressionValidator>
 #include <QIntValidator>
-#include "Dongle/Dongle.hpp"
 
 
 MainWindow::MainWindow(QWidget *parent)
@@ -17,22 +16,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->hostEdit->setValidator(new QRegularExpressionValidator(QRegularExpression("^((?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))*$")));
     ui->portEdit->setValidator(new QIntValidator(0, 65536));
-    if ( !Dongle().verify(_config.get<std::string>("passwd")) )
-    {
-        ActivateDialog* dialog = new ActivateDialog();
-        dialog->exec();
-        if (dialog->alive())
-        {
-            _config.put("passwd", dialog->passwd());
-            boost::property_tree::write_json("./config.json", _config);
-            delete dialog;
-        }
-        else
-        {
-            delete dialog;
-            exit(0);
-        }
-    }
 }
 
 MainWindow::~MainWindow()

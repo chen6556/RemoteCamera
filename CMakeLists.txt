@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.22.0)
-project(RemoteCamera VERSION 1.8.1)
+project(RemoteCamera VERSION 1.8.2)
 
-cmake_policy(SET CMP0074 NEW)
 enable_testing()
 
 if (MSVC)
-    # 设置 msvc 输入代码编码格式为 utf-8
-    add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-    add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+    add_compile_options("/utf-8")
+    add_compile_options("/arch:AVX2")
+    add_compile_options("/GL")
+    add_link_options("/LTCG")
 endif()
 
 set(CMAKE_AUTOUIC ON)
@@ -17,17 +17,12 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Qt库
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-# OpenCV库
-set(OpenCV_DIR "D:/CPPLibs/opencv460/opencv/build/x64/vc16/lib") # 找到lib文件目录
-find_package(OpenCV REQUIRED)	# 找到OpenCV库
+find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-# Boost库
-set(Boost_ROOT "D:/CPPLibs/boost_1_80_0")
 find_package(Boost REQUIRED COMPONENTS)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
@@ -43,10 +38,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         src/main.cpp
         inc/ui/mainwindow.h
         inc/ui/pathdialog.h
-        inc/ui/activatedialog.h
+
         ${_UI_SOURCES}
         ${_BASE_SOURCES}
-        src/Dongle/Dongle.cpp
         ${PROJECT_SOURCE_DIR}/output/resource/favicon.rc
     )
 endif()

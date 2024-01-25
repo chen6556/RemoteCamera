@@ -6,6 +6,5 @@
     "width":1280,
     "height":720,
     "frame_path": ".\/frames\/",
-    "video_path": ".\/videos\/",
-    "passwd": "e5a12c7e-59882351-e8a9c78a-77b8b786"
+    "video_path": ".\/videos\/"
 }

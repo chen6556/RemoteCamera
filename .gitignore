@@ -13,3 +13,5 @@ output/Release/Sender.exe
 output/Release/RemoteCamera.exe
 .vscode/
 output/Release/frames
+
+*yaml
